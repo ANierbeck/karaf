@@ -139,6 +139,8 @@
         <felix.eventadmin.webconsole.plugin.version>1.0.2</felix.eventadmin.webconsole.plugin.version>
         <felix.obr.version>1.0.2</felix.obr.version>
         <felix.scr.version>1.6.2</felix.scr.version>
+        <felix.scr.annotations.version>1.9.6</felix.scr.annotations.version>
+        <felix.scr.maven.plugin.version>1.9.0</felix.scr.maven.plugin.version>
         <felix.scr.webconsole.plugin.version>1.0.0</felix.scr.webconsole.plugin.version>
         <aries.application.version>1.0.0</aries.application.version>
         <aries.application.api.version>1.0.0</aries.application.api.version>
@@ -591,6 +593,11 @@
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.scr</artifactId>
                 <version>${felix.scr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>org.apache.felix.scr.annotations</artifactId>
+                <version>${felix.scr.annotations.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.json</groupId>
@@ -1266,8 +1273,25 @@
                             <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                             <Export-Package>${project.artifactId}*;version=${project.version}</Export-Package>
                             <_versionpolicy>${bnd.version.policy}</_versionpolicy>
+                            <Service-Component>OSGI-INF/*</Service-Component>
                         </instructions>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>maven-scr-plugin</artifactId>
+                    <version>${felix.scr.maven.plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>scr</goal>
+                            </goals>
+                            <configuration>
+                                <specVersion>1.2</specVersion>
+                                <strictMode>false</strictMode>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
