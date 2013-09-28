@@ -560,6 +560,7 @@
                                 </descriptor>
                             </descriptors>
                             <features>
+                                <feature>scr</feature>
                                 <feature>config</feature>
                                 <feature>ssh</feature>
                                 <feature>management</feature>
