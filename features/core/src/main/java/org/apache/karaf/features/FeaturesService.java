@@ -25,6 +25,16 @@ import java.util.Set;
  */
 public interface FeaturesService {
 
+    String FEATURES_PID = "org.apache.karaf.features";
+    String FEATURES_REPOSITORIES = "featuresRepositories";
+    String FEATURES_BOOT = "featuresBoot";
+    String FEATURES_BOOT_ASYNC = "featuresBootAsynchronous";
+    String RESOLVER_TIMEOUT = "resolverTimeout";
+    String RESPECT_START_LVL_DURING_STARTUP = "respectStartLvlDuringFeatureStartup";
+    Long DEFAULT_RESOLVER_TIMEOUT = 5000L;
+
+
+
     enum Option {
         NoCleanIfFailure,
         PrintBundlesToRefresh,

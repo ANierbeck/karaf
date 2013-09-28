@@ -51,6 +51,12 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.ReferenceCardinality;
+import org.apache.felix.scr.annotations.ReferencePolicy;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.utils.manifest.Clause;
 import org.apache.felix.utils.manifest.Parser;
 import org.apache.felix.utils.version.VersionRange;
@@ -90,6 +96,8 @@ import static java.lang.String.format;
  * create dummy sub shells.  When invoked, these commands will prompt the user for
  * installing the needed bundles.
  */
+@Component(name = FeaturesService.FEATURES_PID)
+@Service(FeaturesService.class)
 public class FeaturesServiceImpl implements FeaturesService, FrameworkListener {
 
     public static final String CONFIG_KEY = "org.apache.karaf.features.configKey";
@@ -100,8 +108,11 @@ public class FeaturesServiceImpl implements FeaturesService, FrameworkListener {
             Integer.parseInt(System.getProperty("karaf.startlevel.bundle", "80"));
 
     private BundleContext bundleContext;
+    @Reference
     private ConfigurationAdmin configAdmin;
+    @Reference
     private PackageAdmin packageAdmin;
+    @Reference
     private StartLevel startLevel;
     private boolean respectStartLvlDuringFeatureStartup;
     private long resolverTimeout = 5000;
@@ -112,13 +123,31 @@ public class FeaturesServiceImpl implements FeaturesService, FrameworkListener {
     private String boot;
     private boolean bootFeaturesAsynchronous;
     private boolean bootFeaturesInstalled;
-    private List<FeaturesListener> listeners = new CopyOnWriteArrayIdentityList<FeaturesListener>();
+
+    @Reference(referenceInterface = FeaturesListener.class, cardinality = ReferenceCardinality.OPTIONAL_MULTIPLE, policy = ReferencePolicy.DYNAMIC, bind = "registerListener", unbind = "unregisterListener")
+    private final List<FeaturesListener> listeners = new CopyOnWriteArrayIdentityList<FeaturesListener>();
     private ThreadLocal<Repository> repo = new ThreadLocal<Repository>();
     private EventAdminListener eventAdminListener;
     private final Object refreshLock = new Object();
     private long refreshTimeout = 5000;
 
     public FeaturesServiceImpl() {
+    }
+
+    @Deactivate
+    public void activate(BundleContext bundleContext, Map<String, ?> properties) throws Exception {
+        this.bundleContext = bundleContext;
+        this.boot = String.valueOf(properties.get(FEATURES_BOOT));
+        this.resolverTimeout = Long.parseLong(String.valueOf(properties.containsKey(RESOLVER_TIMEOUT) ? properties.get(RESOLVER_TIMEOUT) : DEFAULT_RESOLVER_TIMEOUT));
+        this.bootFeaturesAsynchronous = Boolean.parseBoolean(String.valueOf(properties.get(FEATURES_BOOT_ASYNC)));
+        this.respectStartLvlDuringFeatureStartup = Boolean.parseBoolean(String.valueOf(properties.get(RESPECT_START_LVL_DURING_STARTUP)));
+        this.uris = parseFeatureRepositories(String.valueOf(properties.get(FEATURES_REPOSITORIES)));
+        start();
+    }
+
+    @Deactivate
+    public void deactivate() throws Exception {
+        stop();
     }
 
     public BundleContext getBundleContext() {
@@ -1495,5 +1524,15 @@ public class FeaturesServiceImpl implements FeaturesService, FrameworkListener {
             }
         }
         return buffer.toString();
+    }
+
+    private Set<URI> parseFeatureRepositories(String featureRepositories) throws URISyntaxException {
+        Set<URI> uris = new HashSet<URI>();
+        if (featureRepositories != null && !featureRepositories.isEmpty()) {
+            for(String repo : featureRepositories.trim().split(",")) {
+                uris.add(new URI(repo));
+            }
+        }
+        return uris;
     }
 }
