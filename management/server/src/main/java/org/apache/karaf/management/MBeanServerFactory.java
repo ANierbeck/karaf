@@ -16,6 +16,8 @@
  */
 package org.apache.karaf.management;
 
+import org.osgi.service.component.annotations.Component;
+
 import java.lang.management.ManagementFactory;
 import java.util.List;
 

@@ -30,7 +30,7 @@
 
     <artifactId>org.apache.karaf.management.server</artifactId>
     <packaging>bundle</packaging>
-    <name>Apache Karaf :: Management</name>
+    <name>Apache Karaf :: Management :: Server</name>
     <description>This bundle starts the Karaf embedded MBean server and RMI registry allowing users to use JMX to manage Karaf.</description>
 
     <properties>
@@ -46,6 +46,16 @@
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.compendium</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.scr.annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.karaf</groupId>
+            <artifactId>org.apache.karaf.util</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -100,8 +110,16 @@
                             javax.management,
                             *
                         </Import-Package>
+                        <Private-Package>
+                            org.apache.karaf.util.config;-split-package:=merge-first
+                        </Private-Package>
+                        <Service-Component>OSGI-INF/*</Service-Component>
                     </instructions>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-scr-plugin</artifactId>
             </plugin>
        </plugins>
     </build>

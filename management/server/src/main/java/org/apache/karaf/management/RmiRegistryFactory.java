@@ -30,25 +30,26 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class RmiRegistryFactory {
 
-    private int port = Registry.REGISTRY_PORT;
-    private String host;
+    private final int port;
+    private final String host;
+    private final boolean locate;
+    private final boolean create;
+
     private Registry registry;
-    private boolean locate;
-    private boolean create = true;
     private boolean locallyCreated;
-    
+
+    public RmiRegistryFactory(int port, String host, boolean locate, boolean create) {
+        this.port = port;
+        this.host = host;
+        this.locate = locate;
+        this.create = create;
+    }
+
     /**
      * @return the create
      */
     public boolean isCreate() {
         return create;
-    }
-
-    /**
-     * @param create the create to set
-     */
-    public void setCreate(boolean create) {
-        this.create = create;
     }
 
     /**
@@ -59,32 +60,14 @@ public class RmiRegistryFactory {
     }
 
     /**
-     * @param locate the locate to set
-     */
-    public void setLocate(boolean locate) {
-        this.locate = locate;
-    }
-
-    /**
      * @return the port
      */
     public int getPort() {
         return port;
     }
 
-    /**
-     * @param port the port to set
-     */
-    public void setPort(int port) {
-        this.port = port;
-    }
-
     public String getHost() {
         return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
     }
 
     public Object getObject() throws Exception {
