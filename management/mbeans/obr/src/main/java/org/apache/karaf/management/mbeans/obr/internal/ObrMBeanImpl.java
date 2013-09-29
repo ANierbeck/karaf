@@ -17,13 +17,19 @@
 package org.apache.karaf.management.mbeans.obr.internal;
 
 import org.apache.felix.bundlerepository.*;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.karaf.management.mbeans.obr.ObrMBean;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.Version;
 
+import javax.management.MBeanServer;
 import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 import javax.management.StandardMBean;
 import javax.management.openmbean.*;
 import java.util.ArrayList;
@@ -32,15 +38,34 @@ import java.util.List;
 /**
  * Implementation of the OBR MBean.
  */
+@Component(name = "org.apache.karaf.managment.mbeans.obr", immediate = true)
 public class ObrMBeanImpl extends StandardMBean implements ObrMBean {
 
+    private static final String OBJECT_NAME = "org.apache.karaf:type=obr,name=" + System.getProperty("karaf.name");
     private static final char VERSION_DELIM = ',';
 
+
     private BundleContext bundleContext;
+
+    @Reference
+    private MBeanServer mBeanServer;
+    @Reference
     private RepositoryAdmin repositoryAdmin;
 
     public ObrMBeanImpl() throws NotCompliantMBeanException {
         super(ObrMBean.class);
+    }
+
+    @Activate
+    public void activate(BundleContext bundleContext) throws Exception {
+        this.bundleContext = bundleContext;
+        mBeanServer.registerMBean(this, new ObjectName(OBJECT_NAME));
+    }
+
+
+    @Deactivate
+    public void deactivate() throws Exception {
+        mBeanServer.unregisterMBean(new ObjectName(OBJECT_NAME));
     }
 
     public List<String> getUrls() throws Exception {
@@ -184,16 +209,7 @@ public class ObrMBeanImpl extends StandardMBean implements ObrMBean {
         return this.bundleContext;
     }
 
-    public void setBundleContext(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
-
     public RepositoryAdmin getRepositoryAdmin() {
         return this.repositoryAdmin;
     }
-
-    public void setRepositoryAdmin(RepositoryAdmin repositoryAdmin) {
-        this.repositoryAdmin = repositoryAdmin;
-    }
-
 }

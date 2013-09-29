@@ -16,6 +16,10 @@
  */
 package org.apache.karaf.management.mbeans.packages.internal;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.karaf.management.mbeans.packages.PackagesMBean;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -23,7 +27,9 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.ExportedPackage;
 import org.osgi.service.packageadmin.PackageAdmin;
 
+import javax.management.MBeanServer;
 import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 import javax.management.StandardMBean;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,12 +37,28 @@ import java.util.List;
 /**
  * Packages MBean implementation.
  */
+@Component(name = "org.apache.karaf.managment.mbeans.packages", immediate = true)
 public class PackagesMBeanImpl extends StandardMBean implements PackagesMBean {
+    private static final String OBJECT_NAME = "org.apache.karaf:type=packages,name=" + System.getProperty("karaf.name");
 
+    @Reference
+    private MBeanServer mBeanServer;
     private BundleContext bundleContext;
 
     public PackagesMBeanImpl() throws NotCompliantMBeanException {
         super(PackagesMBean.class);
+    }
+
+    @Activate
+    public void activate(BundleContext bundleContext) throws Exception {
+        this.bundleContext = bundleContext;
+        mBeanServer.registerMBean(this, new ObjectName(OBJECT_NAME));
+    }
+
+
+    @Deactivate
+    public void deactivate() throws Exception {
+        mBeanServer.unregisterMBean(new ObjectName(OBJECT_NAME));
     }
 
     public List<String> getExports() throws Exception {

@@ -17,24 +17,47 @@
  */
 package org.apache.karaf.management.mbeans.web.internal;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.karaf.management.mbeans.web.WebMBean;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 
+import javax.management.MBeanServer;
 import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 import javax.management.StandardMBean;
 import javax.management.openmbean.*;
 
 /**
  * Web MBean implementation.
  */
+@Component(name = "org.apache.karaf.managment.mbeans.web", immediate = true)
 public class WebMBeanImpl extends StandardMBean implements WebMBean {
 
+    private static final String OBJECT_NAME = "org.apache.karaf:type=web,name=" + System.getProperty("karaf.name");
+
+    @Reference
+    private MBeanServer mBeanServer;
     private BundleContext bundleContext;
 
     public WebMBeanImpl() throws NotCompliantMBeanException {
         super(WebMBean.class);
+    }
+
+    @Activate
+    public void activate(BundleContext bundleContext) throws Exception {
+        this.bundleContext = bundleContext;
+        mBeanServer.registerMBean(this, new ObjectName(OBJECT_NAME));
+    }
+
+
+    @Deactivate
+    public void deactivate() throws Exception {
+        mBeanServer.unregisterMBean(new ObjectName(OBJECT_NAME));
     }
 
     public TabularData list() throws Exception {
@@ -77,9 +100,4 @@ public class WebMBeanImpl extends StandardMBean implements WebMBean {
     public BundleContext getBundleContext() {
         return this.bundleContext;
     }
-
-    public void setBundleContext(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
-
 }

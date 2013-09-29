@@ -13,11 +13,17 @@
  */
 package org.apache.karaf.management.mbeans.dev.internal;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.utils.properties.Properties;
 import org.apache.karaf.management.mbeans.dev.DevMBean;
 import org.osgi.framework.BundleContext;
 
+import javax.management.MBeanServer;
 import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 import javax.management.StandardMBean;
 import java.io.File;
 import java.io.IOException;
@@ -28,20 +34,28 @@ import java.util.Scanner;
 /**
  * Implementation of the DevMBean.
  */
+@Component(name = "org.apache.karaf.managment.mbeans.dev", immediate = true)
 public class DevMBeanImpl extends StandardMBean implements DevMBean {
+    private static final String OBJECT_NAME = "org.apache.karaf:type=dev,name=" + System.getProperty("karaf.name");
 
+    @Reference
+    private MBeanServer mBeanServer;
     private BundleContext bundleContext;
 
     public DevMBeanImpl() throws NotCompliantMBeanException {
         super(DevMBean.class);
     }
 
-    public BundleContext getBundleContext() {
-        return this.bundleContext;
+    @Activate
+    public void activate(BundleContext bundleContext) throws Exception {
+        this.bundleContext = bundleContext;
+        mBeanServer.registerMBean(this, new ObjectName(OBJECT_NAME));
     }
 
-    public void setBundleContext(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
+
+    @Deactivate
+    public void deactivate() throws Exception {
+        mBeanServer.unregisterMBean(new ObjectName(OBJECT_NAME));
     }
 
     public String framework() throws Exception {

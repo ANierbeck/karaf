@@ -18,8 +18,6 @@ package org.apache.karaf.management.mbeans.scr.internal;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.management.MBeanServer;
 import javax.management.NotCompliantMBeanException;
@@ -27,20 +25,17 @@ import javax.management.ObjectName;
 import javax.management.StandardMBean;
 import javax.management.openmbean.TabularData;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Deactivate;
-import aQute.bnd.annotation.component.Reference;
-
 import org.apache.felix.scr.Component;
 import org.apache.felix.scr.ScrService;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.karaf.management.mbeans.scr.ScrServiceMBean;
-
 import org.apache.karaf.management.mbeans.scr.codec.JmxComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@aQute.bnd.annotation.component.Component(name = ScrServiceMBeanImpl.COMPONENT_NAME, enabled = true, immediate = true,
-properties = {"hidden.component=true"})
+@org.apache.felix.scr.annotations.Component(name = "org.apache.karaf.managment.mbeans.scr", immediate = true)
 public class ScrServiceMBeanImpl extends StandardMBean implements ScrServiceMBean {
 
     public static final String OBJECT_NAME = "org.apache.karaf:type=scr,name=" + System.getProperty("karaf.name", "root");
@@ -51,15 +46,15 @@ public class ScrServiceMBeanImpl extends StandardMBean implements ScrServiceMBea
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ScrServiceMBeanImpl.class);
 
+    @Reference
     private MBeanServer mBeanServer;
 
+    @Reference
     private ScrService scrService;
-
-    private ReadWriteLock lock = new ReentrantReadWriteLock();
 
     /**
      * Creates new Declarative Services mbean.
-     * 
+     *
      * @throws NotCompliantMBeanException
      */
     public ScrServiceMBeanImpl() throws NotCompliantMBeanException {
@@ -70,7 +65,7 @@ public class ScrServiceMBeanImpl extends StandardMBean implements ScrServiceMBea
     /**
      * Service component activation call back. Called when all dependencies are
      * satisfied.
-     * 
+     *
      * @throws Exception
      */
     @Activate
@@ -79,14 +74,9 @@ public class ScrServiceMBeanImpl extends StandardMBean implements ScrServiceMBea
         Map<Object, String> mbeans = new HashMap<Object, String>();
         mbeans.put(this, "org.apache.karaf:type=scr,name=${karaf.name}");
         try {
-            lock.writeLock().lock();
-            if (mBeanServer != null) {
-                mBeanServer.registerMBean(this, new ObjectName(OBJECT_NAME));
-            }
+            mBeanServer.registerMBean(this, new ObjectName(OBJECT_NAME));
         } catch (Exception e) {
             LOGGER.error("Exception registering the SCR Management MBean: " + e.getLocalizedMessage(), e);
-        } finally {
-            lock.writeLock().unlock();
         }
     }
 
@@ -94,20 +84,13 @@ public class ScrServiceMBeanImpl extends StandardMBean implements ScrServiceMBea
     /**
      * Service component deactivation call back. Called after the component is
      * in an active state when any dependencies become unsatisfied.
-     * 
+     *
      * @throws Exception
      */
     @Deactivate
     public void deactivate() throws Exception {
         LOGGER.info("Deactivating the " + COMPONENT_LABEL);
-        try {
-            lock.writeLock().lock();
-            if (mBeanServer != null) {
-                mBeanServer.unregisterMBean(new ObjectName(OBJECT_NAME));
-            }
-        } finally {
-            lock.writeLock().unlock();
-        }
+        mBeanServer.unregisterMBean(new ObjectName(OBJECT_NAME));
     }
 
     public TabularData getComponents() throws Exception {
@@ -213,7 +196,6 @@ public class ScrServiceMBeanImpl extends StandardMBean implements ScrServiceMBea
     /**
      * @param mBeanServer the mBeanServer to set
      */
-    @Reference
     public void setmBeanServer(MBeanServer mBeanServer) {
         this.mBeanServer = mBeanServer;
     }
@@ -225,7 +207,6 @@ public class ScrServiceMBeanImpl extends StandardMBean implements ScrServiceMBea
     /**
      * @param scrService the scrService to set
      */
-    @Reference
     public void setScrService(ScrService scrService) {
         this.scrService = scrService;
     }

@@ -16,6 +16,10 @@
  */
 package org.apache.karaf.management.mbeans.system.internal;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.utils.properties.Properties;
 import org.apache.karaf.management.mbeans.system.SystemMBean;
 import org.osgi.framework.Bundle;
@@ -24,7 +28,9 @@ import org.osgi.framework.startlevel.FrameworkStartLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.management.MBeanServer;
 import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 import javax.management.StandardMBean;
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,14 +41,30 @@ import java.util.GregorianCalendar;
 /**
  * System MBean implementation.
  */
+@Component(name = "org.apache.karaf.managment.mbeans.system", immediate = true)
 public class SystemMBeanImpl extends StandardMBean implements SystemMBean {
 
+    private static final String OBJECT_NAME = "org.apache.karaf:type=system,name=" + System.getProperty("karaf.name");
     private final static transient Logger LOGGER = LoggerFactory.getLogger(SystemMBeanImpl.class);
 
+    @Reference
+    private MBeanServer mBeanServer;
     private BundleContext bundleContext;
 
     public SystemMBeanImpl() throws NotCompliantMBeanException {
         super(SystemMBean.class);
+    }
+
+    @Activate
+    public void activate(BundleContext bundleContext) throws Exception {
+        this.bundleContext = bundleContext;
+        mBeanServer.registerMBean(this, new ObjectName(OBJECT_NAME));
+    }
+
+
+    @Deactivate
+    public void deactivate() throws Exception {
+        mBeanServer.unregisterMBean(new ObjectName(OBJECT_NAME));
     }
 
     public String getName() {
@@ -139,10 +161,6 @@ public class SystemMBeanImpl extends StandardMBean implements SystemMBean {
 
     public BundleContext getBundleContext() {
         return this.bundleContext;
-    }
-
-    public void setBundleContext(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
     }
 
     private void shutdown(final long sleep) {

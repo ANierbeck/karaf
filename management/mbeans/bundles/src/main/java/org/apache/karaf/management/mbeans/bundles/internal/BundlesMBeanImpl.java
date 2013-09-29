@@ -16,6 +16,10 @@
  */
 package org.apache.karaf.management.mbeans.bundles.internal;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.karaf.management.mbeans.bundles.BundlesMBean;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -23,9 +27,18 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.startlevel.StartLevel;
 
+import javax.management.MBeanServer;
 import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 import javax.management.StandardMBean;
-import javax.management.openmbean.*;
+import javax.management.openmbean.CompositeData;
+import javax.management.openmbean.CompositeDataSupport;
+import javax.management.openmbean.CompositeType;
+import javax.management.openmbean.OpenType;
+import javax.management.openmbean.SimpleType;
+import javax.management.openmbean.TabularData;
+import javax.management.openmbean.TabularDataSupport;
+import javax.management.openmbean.TabularType;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
@@ -33,12 +46,29 @@ import java.util.List;
 /**
  * Bundles MBean implementation.
  */
+@Component(name = "org.apache.karaf.managment.mbeans.bundles", immediate = true)
 public class BundlesMBeanImpl extends StandardMBean implements BundlesMBean {
 
+    private static final String OBJECT_NAME = "org.apache.karaf:type=bundles,name=" + System.getProperty("karaf.name");
     private BundleContext bundleContext;
+
+    @Reference
+    private MBeanServer mBeanServer;
 
     public BundlesMBeanImpl() throws NotCompliantMBeanException {
         super(BundlesMBean.class);
+    }
+
+    @Activate
+    public void activate(BundleContext bundleContext) throws Exception {
+        this.bundleContext = bundleContext;
+        mBeanServer.registerMBean(this, new ObjectName(OBJECT_NAME));
+    }
+
+
+    @Deactivate
+    public void deactivate() throws Exception {
+        mBeanServer.unregisterMBean(new ObjectName(OBJECT_NAME));
     }
 
     public TabularData getBundles() throws Exception {
@@ -279,9 +309,4 @@ public class BundlesMBeanImpl extends StandardMBean implements BundlesMBean {
     public BundleContext getBundleContext() {
         return this.bundleContext;
     }
-
-    public void setBundleContext(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
-
 }

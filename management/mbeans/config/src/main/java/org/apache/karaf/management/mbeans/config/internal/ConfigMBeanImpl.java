@@ -14,52 +14,70 @@
 package org.apache.karaf.management.mbeans.config.internal;
 
 import org.apache.felix.fileinstall.ArtifactInstaller;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.ReferenceCardinality;
+import org.apache.felix.scr.annotations.ReferencePolicy;
 import org.apache.felix.utils.properties.Properties;
 import org.apache.karaf.management.mbeans.config.ConfigMBean;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.management.MBeanServer;
 import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 import javax.management.StandardMBean;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Implementation of the ConfigMBean.
  */
+@Component(name = "org.apache.karaf.managment.mbeans.config", immediate = true)
 public class ConfigMBeanImpl extends StandardMBean implements ConfigMBean {
     private static final Logger LOG = LoggerFactory.getLogger(ConfigMBeanImpl.class);
+    private static final String OBJECT_NAME = "org.apache.karaf:type=config,name=" + System.getProperty("karaf.name");
     
     private final String FELIX_FILEINSTALL_FILENAME = "felix.fileinstall.filename";
 
+    @Reference
+    private MBeanServer mBeanServer;
+    @Reference
     private ConfigurationAdmin configurationAdmin;
-    private List<ArtifactInstaller> artifactInstallers;
-    private File storage;
+    @Reference(referenceInterface = ArtifactInstaller.class,
+            cardinality = ReferenceCardinality.OPTIONAL_MULTIPLE, policy = ReferencePolicy.DYNAMIC,
+            bind = "bindArtifactInstaller", unbind = "unbindArtifactInstaller")
+    private final List<ArtifactInstaller> artifactInstallers = new CopyOnWriteArrayList<ArtifactInstaller>();
+
+
+    private final File storage = new File(System.getProperty("karaf.base") + File.separator + "etc");
+
+    @Activate
+    public void activate() throws Exception {
+        mBeanServer.registerMBean(this, new ObjectName(OBJECT_NAME));
+    }
+
+    @Deactivate
+    public void deactivate() throws Exception {
+        mBeanServer.unregisterMBean(new ObjectName(OBJECT_NAME));
+    }
 
     public ConfigurationAdmin getConfigurationAdmin() {
         return this.configurationAdmin;
     }
 
-    public void setConfigurationAdmin(ConfigurationAdmin configurationAdmin) {
-        this.configurationAdmin = configurationAdmin;
-    }
-
     public File getStorage() {
         return this.storage;
-    }
-
-    public void setStorage(File storage) {
-        this.storage = storage;
-    }
-
-    public void setArtifactInstallers(List<ArtifactInstaller> artifactInstallers) {
-        this.artifactInstallers = artifactInstallers;
     }
 
     public ConfigMBeanImpl() throws NotCompliantMBeanException {
@@ -296,6 +314,14 @@ public class ConfigMBeanImpl extends StandardMBean implements ConfigMBean {
         } else {
             return new String[] { pid, null };
         }
+    }
+
+    void bindArtifactInstaller(ArtifactInstaller artifactInstaller) {
+        this.artifactInstallers.add(artifactInstaller);
+    }
+
+    void unbindArtifactInstaller(ArtifactInstaller  artifactInstaller) {
+        this.artifactInstallers.remove(artifactInstaller);
     }
 
 }

@@ -16,32 +16,58 @@
  */
 package org.apache.karaf.management.mbeans.log.internal;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.karaf.management.mbeans.log.LogMBean;
 import org.ops4j.pax.logging.spi.PaxLoggingEvent;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 
+import javax.management.MBeanServer;
 import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 import javax.management.StandardMBean;
 import java.io.IOException;
-import java.util.*;
+import java.util.Dictionary;
 
 /**
  * Implementation of the Log MBean.
  */
+@Component(name = "org.apache.karaf.managment.mbeans.log", immediate = true)
 public class LogMBeanImpl extends StandardMBean implements LogMBean {
+
+    private static final String OBJECT_NAME = "org.apache.karaf:type=log,name=" + System.getProperty("karaf.name");
 
     static final String CONFIGURATION_PID = "org.ops4j.pax.logging";
     static final String ROOT_LOGGER_PREFIX = "log4j.rootLogger";
     static final String LOGGER_PREFIX = "log4j.logger.";
     static final String ROOT_LOGGER = "ROOT";
 
+    @Reference
+    private MBeanServer mBeanServer;
+
+    @Reference
+    private ConfigurationAdmin configurationAdmin;
+
     private BundleContext bundleContext;
 
     public LogMBeanImpl() throws NotCompliantMBeanException {
         super(LogMBean.class);
+    }
+
+    @Activate
+    public void activate(BundleContext bundleContext) throws Exception {
+        this.bundleContext = bundleContext;
+        mBeanServer.registerMBean(this, new ObjectName(OBJECT_NAME));
+    }
+
+
+    @Deactivate
+    public void deactivate() throws Exception {
+        mBeanServer.unregisterMBean(new ObjectName(OBJECT_NAME));
     }
 
     public void setLevel(String level) throws Exception {
@@ -108,10 +134,8 @@ public class LogMBeanImpl extends StandardMBean implements LogMBean {
     }
 
     public String getLevel(String logger) throws Exception {
-        ConfigurationAdmin cfgAdmin = getConfigAdmin();
-        Configuration cfg = cfgAdmin.getConfiguration(CONFIGURATION_PID, null);
+        Configuration cfg = getConfiguration();
         Dictionary props = cfg.getProperties();
-
         if (ROOT_LOGGER.equalsIgnoreCase(logger)) {
             logger = null;
         }
@@ -190,21 +214,8 @@ public class LogMBeanImpl extends StandardMBean implements LogMBean {
         return this.bundleContext;
     }
 
-    public void setBundleContext(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
-
     protected Configuration getConfiguration() throws IOException {
-        Configuration cfg = getConfigAdmin().getConfiguration(CONFIGURATION_PID, null);
+        Configuration cfg = configurationAdmin.getConfiguration(CONFIGURATION_PID, null);
         return cfg;
     }
-
-    protected ConfigurationAdmin getConfigAdmin() {
-        ServiceReference ref = bundleContext.getServiceReference(ConfigurationAdmin.class.getName());
-        if (ref != null) {
-            return (ConfigurationAdmin) bundleContext.getService(ref);
-        }
-        return null;
-    }
-
 }
