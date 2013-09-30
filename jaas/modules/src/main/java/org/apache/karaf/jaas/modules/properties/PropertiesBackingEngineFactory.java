@@ -15,9 +15,14 @@
  */
 package org.apache.karaf.jaas.modules.properties;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.utils.properties.Properties;
 import org.apache.karaf.jaas.modules.BackingEngine;
 import org.apache.karaf.jaas.modules.BackingEngineFactory;
+import org.apache.karaf.jaas.modules.EncryptionService;
 import org.apache.karaf.jaas.modules.encryption.EncryptionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,11 +31,22 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
+@Component(name = "org.apache.karaf.jaas.modules.properties.backing.factory", description = "Properties Backing Engine Factory", immediate = true)
+@Service(BackingEngineFactory.class)
 public class PropertiesBackingEngineFactory implements BackingEngineFactory {
 
     private final Logger logger = LoggerFactory.getLogger(PropertiesBackingEngineFactory.class);
 
     private static final String USER_FILE = "users";
+
+    @Activate
+    void activate() {
+    }
+
+    @Deactivate
+    void deactivate() {
+    }
+
 
     /**
      * Builds the Backing Engine

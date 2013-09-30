@@ -24,8 +24,8 @@ import static org.easymock.EasyMock.verify;
 
 import org.apache.felix.service.command.CommandSession;
 import org.apache.karaf.jaas.config.JaasRealm;
-import org.apache.karaf.jaas.config.impl.Config;
-import org.apache.karaf.jaas.config.impl.Module;
+import org.apache.karaf.jaas.config.impl.ConfigImpl;
+import org.apache.karaf.jaas.config.impl.ModuleImpl;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -41,13 +41,13 @@ public class ManageRealmCommandTest {
         ManageRealmCommand cmd = new ManageRealmCommand();
 
         // set up two realms, each containing 1 module
-        Config realm1 = newConfigNamed("realm1");
-        realm1.setModules(new Module[] { newModuleNamed("module1") });
+        ConfigImpl realm1 = newConfigNamed("realm1");
+        realm1.setModules(new ModuleImpl[] { newModuleNamed("module1") });
 
-        Config realm2 = newConfigNamed("realm2");
-        realm2.setModules(new Module[] { newModuleNamed("module2") });
+        ConfigImpl realm2 = newConfigNamed("realm2");
+        realm2.setModules(new ModuleImpl[] { newModuleNamed("module2") });
 
-        Config[] realms = { realm1, realm2 };
+        ConfigImpl[] realms = { realm1, realm2 };
 
         doVerifyIndex(cmd, 1, realms);
         doVerifyIndex(cmd, 2, realms);
@@ -61,7 +61,7 @@ public class ManageRealmCommandTest {
      * @param realms the array of realms.
      * @throws Exception in case of failure.
      */
-    private void doVerifyIndex(ManageRealmCommand cmd, int index, Config[] realms) throws Exception {
+    private void doVerifyIndex(ManageRealmCommand cmd, int index, ConfigImpl[] realms) throws Exception {
         // prepare command
         cmd.index = index;
         cmd.setRealms(Arrays.<JaasRealm> asList(realms));
@@ -71,7 +71,7 @@ public class ManageRealmCommandTest {
         BundleContext bundleContext = createMock(BundleContext.class);
         Bundle bundle = createMock(Bundle.class);
 
-        for (Config realm : realms)
+        for (ConfigImpl realm : realms)
             realm.setBundleContext(bundleContext);
 
         Object[] mocks = { session, bundleContext, bundle };
@@ -93,14 +93,14 @@ public class ManageRealmCommandTest {
         verify(mocks);
     }
 
-    private Config newConfigNamed(String name) throws Exception {
-        Config res = new Config();
+    private ConfigImpl newConfigNamed(String name) throws Exception {
+        ConfigImpl res = new ConfigImpl();
         res.setName(name);
         return res;
     }
 
-    private Module newModuleNamed(String name) throws Exception {
-        Module res = new Module();
+    private ModuleImpl newModuleNamed(String name) throws Exception {
+        ModuleImpl res = new ModuleImpl();
         res.setName(name);
         res.setOptions(new Properties());
         res.setFlags("required");

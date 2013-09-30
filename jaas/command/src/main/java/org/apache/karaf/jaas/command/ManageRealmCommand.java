@@ -35,7 +35,7 @@ public class ManageRealmCommand extends JaasCommandSupport {
     @Option(name = "--index", description = "Realm Index", required = false, multiValued = false)
     int index;
 
-    @Option(name = "--module", aliases = {}, description = "Login Module Class Name", required = false, multiValued = false)
+    @Option(name = "--module", aliases = {}, description = "Login ModuleImpl Class Name", required = false, multiValued = false)
     String moduleName;
 
     @Option(name = "-f", aliases = {"--force"}, description = "Force the management of this realm, even if another one was under management", required = false, multiValued = false)
@@ -53,7 +53,7 @@ public class ManageRealmCommand extends JaasCommandSupport {
         if (oldRealm != null && !oldRealm.getName().equals(realmName) && !force) {
             System.err.println("Another JAAS Realm is being edited. Cancel/update first, or use the --force option.");
         } else if (oldEntry != null && !oldEntry.getLoginModuleName().equals(moduleName) && !force) {
-            System.err.println("Another JAAS Login Module is being edited. Cancel/update first, or use the --force option.");
+            System.err.println("Another JAAS Login ModuleImpl is being edited. Cancel/update first, or use the --force option.");
         } else {
 
             JaasRealm realm = null;

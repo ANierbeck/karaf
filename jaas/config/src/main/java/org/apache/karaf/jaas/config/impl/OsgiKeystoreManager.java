@@ -24,6 +24,11 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.ReferenceCardinality;
+import org.apache.felix.scr.annotations.ReferencePolicy;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.jaas.config.KeystoreInstance;
 import org.apache.karaf.jaas.config.KeystoreIsLocked;
 import org.apache.karaf.jaas.config.KeystoreManager;
@@ -34,17 +39,24 @@ import org.slf4j.LoggerFactory;
 /**
  * Implementation of KeystoreManager
  */
+@Component(name = "org.apache.karaf.jaas.config.keystore.manager", description = "Keystore Manager",
+        immediate = true)
+@Service(KeystoreManager.class)
 public class OsgiKeystoreManager implements KeystoreManager {
 
     private final static transient Logger logger = LoggerFactory.getLogger(OsgiKeystoreManager.class);
 
+    @Reference(referenceInterface = KeystoreInstance.class,
+            cardinality = ReferenceCardinality.OPTIONAL_MULTIPLE, policy = ReferencePolicy.DYNAMIC,
+            bind = "register", unbind = "unregister"
+    )
     private List<KeystoreInstance> keystores = new CopyOnWriteArrayIdentityList<KeystoreInstance>();
 
-    public void register(KeystoreInstance keystore, Map<String,?> properties) {
+    public void register(KeystoreInstance keystore) {
         keystores.add(keystore);
     }
 
-    public void unregister(KeystoreInstance keystore, Map<String,?> properties) {
+    public void unregister(KeystoreInstance keystore) {
         keystores.remove(keystore);
     }
 

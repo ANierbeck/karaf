@@ -16,10 +16,29 @@ package org.apache.karaf.jaas.modules.encryption;
 
 import java.util.Map;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.jaas.modules.Encryption;
 import org.apache.karaf.jaas.modules.EncryptionService;
 
+@Component(name = "org.apache.karaf.jaas.encryption.basic", description = "Karaf Jaas Basic Encryption", immediate = true)
+@Service(EncryptionService.class)
+@Properties(
+        @Property(name = "name", value = "basic")
+)
 public class BasicEncryptionService implements EncryptionService {
+
+    @Activate
+    void activate() {
+    }
+
+    @Deactivate
+    void deactivate() {
+    }
 
     public Encryption createEncryption(Map<String, String> params) throws IllegalArgumentException {
         return new BasicEncryption(params);

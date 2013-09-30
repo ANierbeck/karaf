@@ -32,7 +32,7 @@ public class UpdateCommand extends JaasCommandSupport {
         AppConfigurationEntry entry = (AppConfigurationEntry) session.get(JAAS_ENTRY);
 
         if (realm == null || entry == null) {
-            System.err.println("No JAAS Realm/Login Module selected");
+            System.err.println("No JAAS Realm/Login ModuleImpl selected");
             return null;
         }
 

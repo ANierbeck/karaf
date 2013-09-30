@@ -16,10 +16,24 @@ package org.apache.karaf.jaas.jasypt.impl;
 
 import java.util.Map;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.jaas.modules.Encryption;
 import org.apache.karaf.jaas.modules.EncryptionService;
 
+@Component(name = "org.apache.karaf.jaas.jasypt", description = "Jasypt Encryption Service")
+@Service(EncryptionService.class)
 public class JasyptEncryptionService implements EncryptionService {
+
+    @Activate
+    void activate() {
+    }
+
+    @Deactivate
+    void deactivate() {
+    }
 
     public Encryption createEncryption(Map<String, String> params) throws IllegalArgumentException {
         return new JasyptEncryption(params);

@@ -72,7 +72,7 @@ public abstract class AbstractKarafLoginModule implements LoginModule {
         this.roleDiscriminator = (String) options.get("role.discriminator");
         this.debug = Boolean.parseBoolean((String) options.get("debug"));
         this.detailedLoginExcepion = Boolean.parseBoolean((String) options.get("detailed.login.exception"));
-        // the bundle context is set in the Config JaasRealm by default
+        // the bundle context is set in the ConfigImpl JaasRealm by default
         this.bundleContext = (BundleContext) options.get(BundleContext.class.getName());
         encryptionSupport = new EncryptionSupport(options);
     }

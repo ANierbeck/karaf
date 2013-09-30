@@ -239,7 +239,7 @@ public class JmxFeature {
             itemDescriptions[0] = "The PID of the config";
             itemDescriptions[1] = "The configuration elements";
 
-            return new CompositeType("Config", description, itemNames,
+            return new CompositeType("ConfigImpl", description, itemNames,
                     itemDescriptions, itemTypes);
         } catch (OpenDataException e) {
             throw new IllegalStateException("Unable to build configElement type", e);

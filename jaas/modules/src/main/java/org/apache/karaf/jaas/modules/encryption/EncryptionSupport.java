@@ -43,7 +43,7 @@ public class EncryptionSupport {
     public EncryptionSupport(Map<String, ?> options) {
         this.options = options;
         this.debug = Boolean.parseBoolean((String) options.get("debug"));
-        // the bundle context is set in the Config JaasRealm by default
+        // the bundle context is set in the ConfigImpl JaasRealm by default
         this.bundleContext = (BundleContext) options.get(BundleContext.class.getName());
     }
 

@@ -36,7 +36,7 @@ public class ListRealmsCommand extends JaasCommandSupport {
     protected Object doExecute() throws Exception {
         List<JaasRealm> realms = getRealms();
         if (realms != null && realms.size() > 0) {
-            System.out.println(String.format(REALM_LIST_FORMAT, "Index","Realm", "Module Class"));
+            System.out.println(String.format(REALM_LIST_FORMAT, "Index","Realm", "ModuleImpl Class"));
             int index = 1;
             for (JaasRealm realm : realms) {
                 String realmName = realm.getName();
@@ -48,7 +48,7 @@ public class ListRealmsCommand extends JaasCommandSupport {
                         System.out.println(String.format(REALM_LIST_FORMAT, index++, realmName, moduleClass));
                     }
                 } else {
-                    System.out.println(String.format(REALM_LIST_FORMAT, realmName, "No JAAS Login Module found for JAAS Realm"));
+                    System.out.println(String.format(REALM_LIST_FORMAT, realmName, "No JAAS Login ModuleImpl found for JAAS Realm"));
                 }
             }
         } else {

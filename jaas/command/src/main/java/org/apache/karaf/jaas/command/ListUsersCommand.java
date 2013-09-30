@@ -24,7 +24,7 @@ import org.apache.karaf.jaas.modules.BackingEngine;
 import org.apache.karaf.jaas.boot.principal.RolePrincipal;
 import org.apache.karaf.jaas.boot.principal.UserPrincipal;
 
-@Command(scope = "jaas", name = "users", description = "List the users of the selected JAAS Realm/Login Module")
+@Command(scope = "jaas", name = "users", description = "List the users of the selected JAAS Realm/Login ModuleImpl")
 public class ListUsersCommand extends JaasCommandSupport {
 
     private static final String OUTPUT_FORMAT = "%-20s %-20s";
@@ -35,7 +35,7 @@ public class ListUsersCommand extends JaasCommandSupport {
         AppConfigurationEntry entry = (AppConfigurationEntry) session.get(JAAS_ENTRY);
 
         if (realm == null || entry == null) {
-            System.err.println("No JAAS Realm / Module has been selected.");
+            System.err.println("No JAAS Realm / ModuleImpl has been selected.");
             return null;
         }
 

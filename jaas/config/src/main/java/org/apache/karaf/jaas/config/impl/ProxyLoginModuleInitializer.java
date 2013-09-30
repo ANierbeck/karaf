@@ -16,19 +16,27 @@
  */
 package org.apache.karaf.jaas.config.impl;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
 import org.apache.karaf.jaas.boot.ProxyLoginModule;
 import org.osgi.framework.BundleContext;
 
+@Component(name = "org.apache.karaf.jaas.config.proxy.initializer", description = "Karaf Jaas Proxy Initializer",
+        immediate = true)
 public class ProxyLoginModuleInitializer {
 
     private BundleContext bundleContext;
 
-    public void setBundleContext(BundleContext bundleContext) {
+    @Activate
+    public void init(BundleContext bundleContext) {
         this.bundleContext = bundleContext;
-    }
-
-    public void init() {
         BundleContext context = bundleContext.getBundle(0).getBundleContext();
         ProxyLoginModule.init(context);
+    }
+
+    @Deactivate
+    public void destroy() {
+
     }
 }
