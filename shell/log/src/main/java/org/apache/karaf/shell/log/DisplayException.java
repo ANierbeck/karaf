@@ -16,26 +16,45 @@
  */
 package org.apache.karaf.shell.log;
 
-import org.ops4j.pax.logging.spi.PaxLoggingEvent;
-import org.apache.karaf.shell.console.OsgiCommandSupport;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.ConfigurationPolicy;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+import org.ops4j.pax.logging.spi.PaxLoggingEvent;
 
-@Command(scope = "log", name = "display-exception", description = "Displays the last occurred exception from the log.")
-public class DisplayException extends OsgiCommandSupport {
+@Command(scope = DisplayException.SCOPE_VALUE, name = DisplayException.FUNCTION_VALUE, description = DisplayException.DESCRIPTION)
+@Component(name = DisplayException.ID, description = DisplayException.DESCRIPTION, configurationPid = Log.PID, policy = ConfigurationPolicy.OPTIONAL)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = DisplayException.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = DisplayException.FUNCTION_VALUE)
+})
+public class DisplayException extends ComponentAction {
 
-    protected LruList events;
+    public static final String ID = "org.apache.karaf.shell.log.display.exception";
+    public static final String SCOPE_VALUE = "log";
+    public static final String FUNCTION_VALUE =  "display-exception";
+    public static final String DESCRIPTION = "Displays the last occurred exception from the log.";
 
-    public LruList getEvents() {
+    @Reference
+    protected LogEvents events;
+
+    public LogEvents getEvents() {
         return events;
     }
 
-    public void setEvents(LruList events) {
+    public void setEvents(LogEvents events) {
         this.events = events;
     }
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         PaxLoggingEvent throwableEvent = null;
-        Iterable<PaxLoggingEvent> le = events.getElements(Integer.MAX_VALUE);
+        Iterable<PaxLoggingEvent> le = events.getEvents(Integer.MAX_VALUE);
         for (PaxLoggingEvent event : le) {
             if (event.getThrowableStrRep() != null) {
                 throwableEvent = event;

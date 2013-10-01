@@ -16,31 +16,62 @@
  */
 package org.apache.karaf.shell.log;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.ConfigurationPolicy;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.apache.karaf.shell.log.layout.PatternConverter;
 import org.apache.karaf.shell.log.layout.PatternParser;
 import org.ops4j.pax.logging.spi.PaxAppender;
 import org.ops4j.pax.logging.spi.PaxLoggingEvent;
 
-@Command(scope = "log", name = "tail", description = "Continuously display log entries. Use ctrl-c to quit this command")
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+
+@Command(scope = LogTail.SCOPE_VALUE, name = LogTail.FUNCTION_VALUE, description = LogTail.DESCRIPTION)
+@Component(name = LogTail.ID, description = LogTail.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = LogTail.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = LogTail.FUNCTION_VALUE)
+})
 public class LogTail extends DisplayLog {
 
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    public static final String ID = "org.apache.karaf.shell.log.tail";
+    public static final String SCOPE_VALUE = "log";
+    public static final String FUNCTION_VALUE =  "tail";
+    public static final String DESCRIPTION = "Continuously display log entries. Use ctrl-c to quit this command";
 
-    protected Object doExecute() throws Exception {
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+    @Activate
+    void activate(Map<String, ?> props) {
+        super.activate(props);
+    }
+
+    @Deactivate
+    void deactivate() {
+        super.deactivate();
+        executorService.shutdownNow();
+    }
+
+    public Object doExecute() throws Exception {
         PrintEventThread printThread = new PrintEventThread();
         executorService.execute(printThread);
         new Thread(new ReadKeyBoardThread(this, Thread.currentThread())).start();
         while (!Thread.currentThread().isInterrupted());
         printThread.abort();
-        executorService.shutdownNow();  
         return null;
     }
     
@@ -54,7 +85,7 @@ public class LogTail extends DisplayLog {
         public void run() {
             for (;;) {
                 try {
-                    int c = this.logTail.session.getKeyboard().read();
+                    int c = this.logTail.getSession().getKeyboard().read();
                     if (c < 0) {
                         this.sessionThread.interrupt();
                         break;
@@ -75,7 +106,7 @@ public class LogTail extends DisplayLog {
             final PatternConverter cnv = new PatternParser(overridenPattern != null ? overridenPattern : pattern).parse();
             final PrintStream out = System.out;
 
-            Iterable<PaxLoggingEvent> le = events.getElements(entries == 0 ? Integer.MAX_VALUE : entries);
+            Iterable<PaxLoggingEvent> le = events.getEvents(entries == 0 ? Integer.MAX_VALUE : entries);
             for (PaxLoggingEvent event : le) {
                 display(cnv, event, out);
             }

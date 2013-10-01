@@ -18,21 +18,32 @@
  */
 package org.apache.karaf.shell.log;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
 import org.ops4j.pax.logging.spi.PaxAppender;
 import org.ops4j.pax.logging.spi.PaxLoggingEvent;
 
 /**
  * A Pax Logging appender that keep a list of last events
  */
+@Component(name = "org.apache.karaf.log.appnder.vm", description = "Karaf VM Log Appender", immediate = true)
+@Service(PaxAppender.class)
+@Properties(
+        @Property(name = "org.ops4j.pax.logging.appender.name", value = "VmLogAppender")
+)
 public class VmLogAppender implements PaxAppender {
 
-    protected LruList events;
+    @Reference
+    private LogEvents events;
 
-    public LruList getEvents() {
+    public LogEvents getEvents() {
         return events;
     }
 
-    public void setEvents(LruList events) {
+    public void setEvents(LogEvents events) {
         this.events = events;
     }
 
@@ -42,5 +53,4 @@ public class VmLogAppender implements PaxAppender {
             events.add(event);
         }
     }
-
 }

@@ -17,20 +17,42 @@
 package org.apache.karaf.shell.log;
 
 import java.io.PrintStream;
+import java.util.Map;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.ConfigurationPolicy;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.apache.karaf.shell.log.layout.PatternConverter;
 import org.apache.karaf.shell.log.layout.PatternParser;
-import org.apache.karaf.shell.console.OsgiCommandSupport;
 import org.apache.felix.gogo.commands.Option;
 import org.apache.felix.gogo.commands.Command;
-import org.ops4j.pax.logging.spi.PaxAppender;
 import org.ops4j.pax.logging.spi.PaxLoggingEvent;
+
+import static org.apache.karaf.util.config.ConfigUtils.readString;
 
 /**
  * Displays the last log entries
  */
-@Command(scope = "log", name = "display", description = "Displays log entries.")
-public class DisplayLog extends OsgiCommandSupport {
+@Command(scope = DisplayLog.SCOPE_VALUE, name = DisplayLog.FUNCTION_VALUE, description = DisplayLog.DESCRIPTION)
+@Component(name = DisplayLog.ID, description = DisplayLog.DESCRIPTION, configurationPid = Log.PID, policy = ConfigurationPolicy.OPTIONAL)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = DisplayLog.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = DisplayLog.FUNCTION_VALUE)
+})
+public class DisplayLog extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.log.display";
+    public static final String SCOPE_VALUE = "log";
+    public static final String FUNCTION_VALUE =  "display";
+    public static final String DESCRIPTION = "Displays log entries.";
 
     @Option(name = "-n", aliases = {}, description="Number of entries to display", required = false, multiValued = false)
     protected int entries;
@@ -41,14 +63,25 @@ public class DisplayLog extends OsgiCommandSupport {
     @Option(name = "--no-color", description="Disable syntax coloring of log events", required = false, multiValued = false)
     protected boolean noColor;
 
+    @Reference
+    protected LogEvents events;
+
+    @Property(name = PATTERN_NAME, label = "Pattern", description = "Pattern used to display log entries")
     protected String pattern;
-    protected LruList events;
     protected String fatalColor;
     protected String errorColor;
     protected String warnColor;
     protected String infoColor;
     protected String debugColor;
     protected String traceColor;
+
+    public static final String PATTERN_NAME = "pattern";
+    public static final String FATAL_COLOR = "fatalColoer";
+    public static final String ERROR_COLOR = "errorColor";
+    public static final String WARN_COLOR = "warnColor";
+    public static final String INFO_COLOR = "infoColor";
+    public static final String DEBUG_COLOR = "debugColor";
+    public static final String TRACE_COLOR = "taceColor";
 
     private static final String FATAL = "fatal";
     private static final String ERROR = "error";
@@ -61,11 +94,26 @@ public class DisplayLog extends OsgiCommandSupport {
 	private static final char SECOND_ESC_CHAR = '[';
     private static final char COMMAND_CHAR = 'm';
 
-    public LruList getEvents() {
+    @Activate
+    void activate(Map<String, ?> props) {
+        pattern = readString(props, PATTERN_NAME);
+        errorColor = readString(props, ERROR_COLOR);
+        warnColor = readString(props, WARN_COLOR);
+        infoColor = readString(props, INFO_COLOR);
+        debugColor = readString(props, DEBUG_COLOR);
+        traceColor = readString(props, TRACE_COLOR);
+    }
+
+    @Deactivate
+    void deactivate() {
+
+    }
+
+    public LogEvents getEvents() {
         return events;
     }
 
-    public void setEvents(LruList events) {
+    public void setEvents(LogEvents events) {
         this.events = events;
     }
 
@@ -125,11 +173,11 @@ public class DisplayLog extends OsgiCommandSupport {
         this.traceColor = traceColor;
     }
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         final PatternConverter cnv = new PatternParser(overridenPattern != null ? overridenPattern : pattern).parse();
         final PrintStream out = System.out;
 
-        Iterable<PaxLoggingEvent> le = events.getElements(entries == 0 ? Integer.MAX_VALUE : entries);
+        Iterable<PaxLoggingEvent> le = events.getEvents(entries == 0 ? Integer.MAX_VALUE : entries);
         for (PaxLoggingEvent event : le) {
             if (event != null) {
             display(cnv, event, out);

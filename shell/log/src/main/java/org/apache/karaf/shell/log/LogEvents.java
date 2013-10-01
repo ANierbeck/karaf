@@ -21,29 +21,55 @@ package org.apache.karaf.shell.log;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.ConfigurationPolicy;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.ops4j.pax.logging.spi.PaxAppender;
 import org.ops4j.pax.logging.spi.PaxLoggingEvent;
+
+import static org.apache.karaf.util.config.ConfigUtils.readInt;
 
 /**
  * A list that only keep the last N elements added
  */
-public class LruList {
+@Component(name = "org.apache.karaf.log.event.manager", configurationPid = Log.PID, policy = ConfigurationPolicy.OPTIONAL, description = "Karaf Log Events Holder", immediate = true)
+@Service(LogEvents.class)
+public class LogEvents {
+
+    public static final String ID = "org.apache.karaf.log.events";
+
+    private static final String SIZE = "size";
 
     private PaxLoggingEvent[] elements;
     private transient int start = 0;
     private transient int end = 0;
     private transient boolean full = false;
-    private final int maxElements;
-    private final List<PaxAppender> appenders;
+    private int maxElements;
+    private final List<PaxAppender> appenders = new CopyOnWriteArrayList<PaxAppender>();
 
-    public LruList(int size) {
+
+    @Property(name = "size", label = "Size", description = "Log Event List size", intValue = 500)
+    private int size;
+
+    @Activate
+    synchronized void activate(Map<String, ?> props) {
+        this.size = readInt(props, SIZE);
         if (size <= 0) {
             throw new IllegalArgumentException("The size must be greater than 0");
         }
         elements = new PaxLoggingEvent[size];
         maxElements = elements.length;
-        appenders = new ArrayList<PaxAppender>();
+    }
+
+    @Deactivate
+    synchronized void deactivate() {
+        appenders.clear();
     }
 
     public synchronized int size() {
@@ -94,11 +120,11 @@ public class LruList {
         }
     }
 
-    public synchronized Iterable<PaxLoggingEvent> getElements() {
-        return getElements(size());
+    public synchronized Iterable<PaxLoggingEvent> getEvents() {
+        return getEvents(size());
     }
 
-    public synchronized Iterable<PaxLoggingEvent> getElements(int nb) {
+    public synchronized Iterable<PaxLoggingEvent> getEvents(int nb) {
         int s = size();
         nb = Math.min(Math.max(0, nb), s);
         PaxLoggingEvent[] e = new PaxLoggingEvent[nb];
@@ -108,11 +134,11 @@ public class LruList {
         return Arrays.asList(e);
     }
 
-    public synchronized void addAppender(PaxAppender appender) {
+    public void addAppender(PaxAppender appender) {
         this.appenders.add(appender);
     }
 
-    public synchronized void removeAppender(PaxAppender appender) {
+    public void removeAppender(PaxAppender appender) {
         this.appenders.remove(appender);
     }
 

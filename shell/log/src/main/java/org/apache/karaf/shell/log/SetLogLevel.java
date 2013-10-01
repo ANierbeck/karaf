@@ -16,22 +16,46 @@
  */
 package org.apache.karaf.shell.log;
 
-import java.io.IOException;
-import java.util.Dictionary;
-
-import org.apache.karaf.shell.console.OsgiCommandSupport;
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
-import org.osgi.framework.ServiceReference;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.ConfigurationPolicy;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+import org.apache.karaf.shell.log.completers.LogLevelCompleter;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
+
+import java.io.IOException;
+import java.util.Dictionary;
 
 /**
  * Set the log level for a given logger
  */
-@Command(scope = "log", name = "set", description = "Sets the log level.")
-public class SetLogLevel extends OsgiCommandSupport {
-    
+@Command(scope = SetLogLevel.SCOPE_VALUE, name = SetLogLevel.FUNCTION_VALUE, description = SetLogLevel.DESCRIPTION)
+@Component(name = SetLogLevel.ID, description = SetLogLevel.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = SetLogLevel.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = SetLogLevel.FUNCTION_VALUE)
+})
+public class SetLogLevel extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.log.set";
+    public static final String SCOPE_VALUE = "log";
+    public static final String FUNCTION_VALUE =  "set";
+    public static final String DESCRIPTION = "Sets the log level.";
+
+    @Reference
+    private ConfigurationAdmin configurationAdmin;
+
+
     @Argument(index = 0, name = "level", description = "The log level to set (TRACE, DEBUG, INFO, WARN, ERROR) or DEFAULT to unset", required = true, multiValued = false)
     String level;
 
@@ -43,7 +67,19 @@ public class SetLogLevel extends OsgiCommandSupport {
     static final String LOGGER_PREFIX      = "log4j.logger.";
     static final String ROOT_LOGGER        = "ROOT";
 
-    protected Object doExecute() throws Exception {
+    private final LogLevelCompleter LOG_LEVEL_COMPLETER = new LogLevelCompleter();
+
+    @Activate
+    void activate() {
+        bindCompleter(LOG_LEVEL_COMPLETER);
+    }
+
+    @Deactivate
+    void deactivate() {
+        unbindCompleter(LOG_LEVEL_COMPLETER);
+    }
+
+    public Object doExecute() throws Exception {
         if (ROOT_LOGGER.equalsIgnoreCase(this.logger)) {
             this.logger = null;
         }
@@ -107,17 +143,10 @@ public class SetLogLevel extends OsgiCommandSupport {
 
         return null;
     }
-    
-    
 
     protected Configuration getConfiguration() throws IOException {
-        Configuration cfg = getConfigAdmin().getConfiguration(CONFIGURATION_PID, null);
+        Configuration cfg = configurationAdmin.getConfiguration(CONFIGURATION_PID, null);
         return cfg;
-    }
-
-    protected ConfigurationAdmin getConfigAdmin() {
-        ServiceReference ref = getBundleContext().getServiceReference(ConfigurationAdmin.class.getName());
-        return getService(ConfigurationAdmin.class, ref);
     }
 
 }

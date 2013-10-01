@@ -17,25 +17,56 @@
 package org.apache.karaf.shell.log;
 
 import org.apache.felix.gogo.commands.Command;
-import org.apache.karaf.shell.console.OsgiCommandSupport;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.ConfigurationPolicy;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+
+import java.util.Map;
 
 /**
  * Clear the last log entries.
  */
-@Command(scope = "log", name = "clear", description = "Clear log entries.")
-public class ClearLog extends OsgiCommandSupport {
+@Command(scope = ClearLog.SCOPE_VALUE, name = ClearLog.FUNCTION_VALUE, description = ClearLog.DESCRIPTION)
+@Component(name = ClearLog.ID, description = ClearLog.DESCRIPTION, configurationPid = Log.PID, policy = ConfigurationPolicy.OPTIONAL)
+@Service(CompletableFunction.class)
+@Properties({
+                @Property(name = ComponentAction.SCOPE, value = ClearLog.SCOPE_VALUE),
+                @Property(name = ComponentAction.FUNCTION, value = ClearLog.FUNCTION_VALUE)
+})
+public class ClearLog extends ComponentAction {
 
-    protected LruList events;
-   
-    public LruList getEvents() {
+    public static final String ID = "org.apache.karaf.shell.log.clear";
+    public static final String SCOPE_VALUE = "log";
+    public static final String FUNCTION_VALUE =  "clear";
+    public static final String DESCRIPTION = "Clear log entries.";
+
+    @Reference
+    private LogEvents events;
+
+    @Activate
+    void activate(Map<String, ?> props) {
+    }
+
+    @Deactivate
+    void deactivate() {
+
+    }
+    public LogEvents getEvents() {
         return events;
     }
 
-    public void setEvents(LruList events) {
+    public void setEvents(LogEvents events) {
         this.events = events;
     }
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         events.clear();
         return null;
     }

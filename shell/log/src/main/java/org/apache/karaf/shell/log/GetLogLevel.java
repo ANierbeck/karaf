@@ -16,23 +16,43 @@
  */
 package org.apache.karaf.shell.log;
 
+import org.apache.felix.gogo.commands.Argument;
+import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.ConfigurationPolicy;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+import org.osgi.service.cm.Configuration;
+import org.osgi.service.cm.ConfigurationAdmin;
+
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.osgi.framework.ServiceReference;
-import org.osgi.service.cm.Configuration;
-import org.osgi.service.cm.ConfigurationAdmin;
-import org.apache.karaf.shell.console.OsgiCommandSupport;
-import org.apache.felix.gogo.commands.Argument;
-import org.apache.felix.gogo.commands.Command;
-
 /**
  * Get the log level for a given logger
  */
-@Command(scope = "log", name = "get", description = "Shows the currently set log level.")
-public class GetLogLevel extends OsgiCommandSupport {
+@Command(scope = GetLogLevel.SCOPE_VALUE, name = GetLogLevel.FUNCTION_VALUE, description = SetLogLevel.DESCRIPTION)
+@Component(name = GetLogLevel.ID, description = GetLogLevel.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = GetLogLevel.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = GetLogLevel.FUNCTION_VALUE)
+})
+public class GetLogLevel extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.log.get";
+    public static final String SCOPE_VALUE = "log";
+    public static final String FUNCTION_VALUE =  "get";
+    public static final String DESCRIPTION = "Shows the currently set log level.";
+
+    @Reference
+    private ConfigurationAdmin configurationAdmin;
 
     @Argument(index = 0, name = "logger", description = "The name of the logger, ALL or ROOT (default)", required = false, multiValued = false)
     String logger;
@@ -43,8 +63,8 @@ public class GetLogLevel extends OsgiCommandSupport {
     static final String ALL_LOGGER         = "ALL";
     static final String ROOT_LOGGER        = "ROOT";
 
-    protected Object doExecute() throws Exception {
-        ConfigurationAdmin cfgAdmin = getConfigAdmin();
+    public Object doExecute() throws Exception {
+        ConfigurationAdmin cfgAdmin = configurationAdmin;
         Configuration cfg = cfgAdmin.getConfiguration(CONFIGURATION_PID, null);
         Dictionary props = cfg.getProperties();
 
@@ -110,10 +130,4 @@ public class GetLogLevel extends OsgiCommandSupport {
             return val;
         }
     }
-
-    protected ConfigurationAdmin getConfigAdmin() {
-        ServiceReference ref = getBundleContext().getServiceReference(ConfigurationAdmin.class.getName());
-        return getService(ConfigurationAdmin.class, ref);
-    }
-
 }
