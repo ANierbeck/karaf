@@ -16,20 +16,37 @@
  */
 package org.apache.karaf.shell.packages;
 
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.felix.gogo.commands.Argument;
-import org.apache.felix.gogo.commands.Option;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 import org.osgi.service.packageadmin.ExportedPackage;
 import org.osgi.service.packageadmin.PackageAdmin;
 
-@Command(scope = "packages", name = "exports", description = "Displays exported packages.")
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
+
+@Command(scope = ExportsCommand.SCOPE_VALUE, name = ExportsCommand.FUNCTION_VALUE, description = ExportsCommand.DESCRIPTION)
+@Component(name = ExportsCommand.ID, description = ExportsCommand.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ExportsCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ExportsCommand.FUNCTION_VALUE)
+})
 public class ExportsCommand extends PackageCommandSupport {
+
+    public static final String ID = "org.apache.karaf.shell.packages.exports";
+    public static final String SCOPE_VALUE = "packages";
+    public static final String FUNCTION_VALUE =  "exports";
+    public static final String DESCRIPTION = "Displays exported packages.";
 
     @Option(name = "-i", aliases = {"--imports"}, description = "List bundles importing the specified packages")
     boolean imports;

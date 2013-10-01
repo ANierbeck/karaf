@@ -16,22 +16,39 @@
  */
 package org.apache.karaf.shell.packages;
 
+import org.apache.felix.gogo.commands.Argument;
+import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.Constants;
+import org.osgi.service.packageadmin.ExportedPackage;
+import org.osgi.service.packageadmin.PackageAdmin;
+
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.osgi.framework.Bundle;
-import org.osgi.framework.Constants;
-import org.osgi.service.packageadmin.ExportedPackage;
-import org.osgi.service.packageadmin.PackageAdmin;
-import org.apache.felix.gogo.commands.Argument;
-import org.apache.felix.gogo.commands.Command;
-import org.apache.felix.gogo.commands.Option;
-
-@Command(scope = "packages", name = "imports", description = "Displays imported packages.")
+@Command(scope = ImportsCommand.SCOPE_VALUE, name = ImportsCommand.FUNCTION_VALUE, description = ImportsCommand.DESCRIPTION)
+@Component(name = ImportsCommand.ID, description = ImportsCommand.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ImportsCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ImportsCommand.FUNCTION_VALUE)
+})
 public class ImportsCommand extends PackageCommandSupport {
+
+    public static final String ID = "org.apache.karaf.shell.packages.imports";
+    public static final String SCOPE_VALUE = "packages";
+    public static final String FUNCTION_VALUE =  "imports";
+    public static final String DESCRIPTION = "Displays imported packages.";
 
 	@Argument(index = 0, name = "ids", description = "The IDs of bundles to check", required = false, multiValued = true)
     List<Long> ids;

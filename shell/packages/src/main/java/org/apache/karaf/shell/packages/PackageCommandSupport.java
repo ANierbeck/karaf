@@ -16,8 +16,11 @@
  */
 package org.apache.karaf.shell.packages;
 
-import org.apache.karaf.shell.console.OsgiCommandSupport;
-import org.osgi.framework.ServiceReference;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+import org.osgi.framework.BundleContext;
 import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
@@ -26,30 +29,29 @@ import org.osgi.service.packageadmin.PackageAdmin;
  * This command retrieves a reference to the PackageAdmin service before
  * calling another method to actually process the command.
  */
-public abstract class PackageCommandSupport extends OsgiCommandSupport {
+@Component(name = PackageCommandSupport.ID, componentAbstract = true)
+public abstract class PackageCommandSupport extends ComponentAction {
 
-    protected Object doExecute() throws Exception {
-        // Get package admin service.
-        ServiceReference ref = getBundleContext().getServiceReference(PackageAdmin.class.getName());
-        if (ref == null) {
-            System.out.println("PackageAdmin service is unavailable.");
-            return null;
-        }
-        try {
-            PackageAdmin admin = (PackageAdmin) getBundleContext().getService(ref);
-            if (admin == null) {
-                System.out.println("PackageAdmin service is unavailable.");
-                return null;
-            }
+    public static final String ID = "org.apache.karaf.shell.packages.base";
 
-            doExecute(admin);
-        }
-        finally {
-            getBundleContext().ungetService(ref);
-        }
+    @Reference
+    private PackageAdmin packageAdmin;
+
+    private BundleContext bundleContext;
+
+    @Activate
+    void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
+    }
+
+    public Object doExecute() throws Exception {
+        doExecute(packageAdmin);
         return null;
     }
 
     protected abstract void doExecute(PackageAdmin admin) throws Exception;
 
+    public BundleContext getBundleContext() {
+        return bundleContext;
+    }
 }
