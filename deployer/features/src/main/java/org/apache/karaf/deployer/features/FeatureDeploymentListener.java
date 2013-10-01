@@ -25,11 +25,17 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
+import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.karaf.features.internal.FeatureImpl;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Reference;
+import org.osgi.service.url.URLStreamHandlerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -50,6 +56,8 @@ import org.xml.sax.SAXParseException;
 /**
  * A deployment listener able to hot deploy a feature descriptor
  */
+@Component(name = "org.apache.karaf.deployer.features", description = "Karaf Features Deployer", immediate = true)
+@Service(ArtifactUrlTransformer.class)
 public class FeatureDeploymentListener implements ArtifactUrlTransformer, BundleListener {
 
     public static final String FEATURE_PATH = "org.apache.karaf.shell.features";
@@ -57,7 +65,21 @@ public class FeatureDeploymentListener implements ArtifactUrlTransformer, Bundle
     private final Logger logger = LoggerFactory.getLogger(FeatureDeploymentListener.class);
 
     private DocumentBuilderFactory dbf;
+
+    @Reference
     private FeaturesService featuresService;
+    @Reference(referenceInterface = URLStreamHandlerService.class, target = "(url.handler.protocol=feature)")
+    private URLStreamHandlerService urlHandler;
+
+    @Activate
+    void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
+    }
+
+    @Deactivate
+    void deactivate() {
+    }
+
     private BundleContext bundleContext;
 
     public void setFeaturesService(FeaturesService featuresService) {
@@ -76,7 +98,9 @@ public class FeatureDeploymentListener implements ArtifactUrlTransformer, Bundle
         this.bundleContext = bundleContext;
     }
 
-    public void init() throws Exception {
+    @Activate
+    public void init(BundleContext bundleContext) throws Exception {
+        this.bundleContext = bundleContext;
         bundleContext.addBundleListener(this);
         for (Bundle bundle : bundleContext.getBundles()) {
             if (bundle.getState() == Bundle.RESOLVED || bundle.getState() == Bundle.STARTING
@@ -85,6 +109,7 @@ public class FeatureDeploymentListener implements ArtifactUrlTransformer, Bundle
         }
     }
 
+    @Deactivate
     public void destroy() throws Exception {
         bundleContext.removeBundleListener(this);
     }

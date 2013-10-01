@@ -19,6 +19,12 @@
 package org.apache.karaf.deployer.kar;
 
 import org.apache.felix.fileinstall.ArtifactInstaller;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.features.Feature;
 import org.apache.karaf.features.FeaturesService;
 import org.apache.karaf.features.Repository;
@@ -40,9 +46,15 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import static org.apache.karaf.util.config.ConfigUtils.readString;
+import static org.apache.karaf.util.config.ConfigUtils.readBoolean;
+
+@Component(name = "org.apache.karaf.kar", description = "Karaf Kar Installer", immediate = true)
+@Service(ArtifactInstaller.class)
 public class KarArtifactInstaller implements ArtifactInstaller {
 
     public static final String FEATURES_CLASSIFIER = "features";
@@ -51,18 +63,30 @@ public class KarArtifactInstaller implements ArtifactInstaller {
     private static final String KAR_SUFFIX = ".kar";
     private static final String ZIP_SUFFIX = ".zip";
 
-    private String base = "./";
-    private String localRepoPath = "./target/system";
+    private static final String DEFAULT_BASE_PATH =  System.getProperty("karaf.base");
+    private static final String DEFAULT_SYSTEM_PATH = DEFAULT_BASE_PATH + File.separatorChar + "system";
+
+    @Property(name = "base", label = "Karaf Base Path", description = "The path to Karaf base directory")
+    private String base;
+    @Property(name = "localRepoPath", label = "Karaf System Path", description = "The path to Karaf system repository")
+    private String localRepoPath;
 
     private String timestampPath;
 
     private DocumentBuilderFactory dbf;
 
+    @Reference
     private FeaturesService featuresService;
-    
+
+    @Property(name = "noAutoRefreshBundles", label = "No automatic refresh on bundles", description = "Flag to disable automatic bundle refreshes", boolValue = false)
     private boolean noAutoRefreshBundles;
 
-    public void init() {
+    @Activate
+    public void init(Map<String, ?> properties) {
+        base = readString(properties, "base");
+        localRepoPath = readString(properties, "localRepoPath");
+        noAutoRefreshBundles = readBoolean(properties, "noAutoRefreshBundles");
+
         dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
 
@@ -76,6 +100,7 @@ public class KarArtifactInstaller implements ArtifactInstaller {
         logger.info("Timestamps for Karaf archives will be extracted to {}", timestampPath);
     }
 
+    @Deactivate
     public void destroy() {
         logger.info("Karaf archive installer destroyed.");
     }

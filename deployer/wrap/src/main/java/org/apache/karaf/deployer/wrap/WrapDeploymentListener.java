@@ -24,12 +24,37 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 import org.apache.felix.fileinstall.ArtifactUrlTransformer;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.util.DeployerUtils;
+import org.osgi.service.url.URLStreamHandlerService;
 
 /**
  * A deployment listener that listens for non OSGi jar deployements.
  */
+@Component(name = "org.apache.karaf.deployer.wrap", description = "Karaf Wrap Deployer", immediate = true)
+@Service(ArtifactUrlTransformer.class)
+@Properties(
+        @Property(name = "ranking", value = "-1")
+)
 public class WrapDeploymentListener implements ArtifactUrlTransformer {
+
+    @Reference(referenceInterface = URLStreamHandlerService.class, target = "(url.handler.protocol=wrap)")
+    private URLStreamHandlerService urlHandler;
+
+    @Activate
+    void activate() {
+    }
+
+    @Deactivate
+    void deactivate() {
+    }
+
 
     public boolean canHandle(File artifact) {
         try {

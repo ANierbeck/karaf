@@ -28,6 +28,8 @@ import org.junit.Test;
 
 import java.io.File;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
@@ -49,11 +51,12 @@ public class KarArtifactInstallerTest {
 
         karArtifactInstaller = new KarArtifactInstaller();
 
+        Map<String, Object> props = new HashMap<String, Object>();
+        props.put("base", "/target");
+        props.put("localRepoPath", "target/system");
+        props.put("noAutoRefreshBundles", false);
         karArtifactInstaller.setFeaturesService(featuresService);
-        karArtifactInstaller.setBasePath("./target");
-        karArtifactInstaller.setLocalRepoPath("./target/system");
-
-        karArtifactInstaller.init();
+        karArtifactInstaller.init(props);
 
         goodKarFile = getClass().getClassLoader().getResource("goodKarFile.kar").toURI();
         zipFileWithKarafManifest = getClass().getClassLoader().getResource("karFileAsZip.zip").toURI();

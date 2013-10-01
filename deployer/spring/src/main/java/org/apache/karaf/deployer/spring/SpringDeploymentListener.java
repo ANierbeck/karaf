@@ -23,6 +23,14 @@ import java.net.URL;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
+import org.osgi.service.url.URLStreamHandlerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -36,9 +44,26 @@ import org.xml.sax.SAXException;
  * A deployment listener that listens for spring xml applications
  * and creates bundles for these.
  */
+@Component(name = "org.apache.karaf.deployer.spring", description = "Karaf Spring Deployer", immediate = true)
+@Service(ArtifactUrlTransformer.class)
+@Properties(
+        @Property(name = "ranking", value = "-1")
+)
 public class SpringDeploymentListener implements ArtifactUrlTransformer {
 
     private final Logger logger = LoggerFactory.getLogger(SpringDeploymentListener.class);
+
+    @Reference(referenceInterface = URLStreamHandlerService.class, target = "(url.handler.protocol=spring)")
+    private URLStreamHandlerService urlHandler;
+
+    @Activate
+    void activate() {
+    }
+
+    @Deactivate
+    void deactivate() {
+    }
+
 
     private DocumentBuilderFactory dbf;
 

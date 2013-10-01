@@ -25,6 +25,8 @@ import java.lang.Exception;
 import java.net.URI;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -74,11 +76,13 @@ public class InstallKarsMojo extends MojoSupport {
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         KarArtifactInstaller installer = new KarArtifactInstaller();
-        installer.setBasePath(workDirectory);
-        installer.setLocalRepoPath(systemRepoDirectory);
         FeaturesService featuresService = new OfflineFeaturesService();
         installer.setFeaturesService(featuresService);
-        installer.init();
+        Map<String, Object> props = new HashMap<String, Object>();
+        props.put("base", workDirectory);
+        props.put("localRepoPath", systemRepoDirectory);
+        props.put("noAutoRefreshBundles", false);
+        installer.init(props);
         Collection<Artifact> dependencies = project.getDependencyArtifacts();
         StringBuilder buf = new StringBuilder();
         for (Artifact artifact: dependencies) {

@@ -20,15 +20,20 @@ package org.apache.karaf.deployer.spring;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.osgi.service.url.AbstractURLStreamHandlerService;
+import org.osgi.service.url.URLStreamHandlerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +41,11 @@ import org.slf4j.LoggerFactory;
  * A URL handler that will transform a JBI artifact to an OSGi bundle
  * on the fly.  Needs to be registered in the OSGi registry.
  */
+@Component(name = "org.apache.karaf.urlhandler.spring", description = "Karaf Spring Url Handler", immediate = true)
+@Service(URLStreamHandlerService.class)
+@Properties(
+        @Property(name = "url.handler.protocol", value = "spring")
+)
 public class SpringURLHandler extends AbstractURLStreamHandlerService {
 
 	private final Logger logger = LoggerFactory.getLogger(SpringURLHandler.class);
@@ -43,6 +53,14 @@ public class SpringURLHandler extends AbstractURLStreamHandlerService {
 	private static String SYNTAX = "spring: spring-xml-uri";
 
 	private URL springXmlURL;
+
+    @Activate
+    void activate() {
+    }
+
+    @Deactivate
+    void deactivate() {
+    }
 
     /**
      * Open the connection for the given URL.

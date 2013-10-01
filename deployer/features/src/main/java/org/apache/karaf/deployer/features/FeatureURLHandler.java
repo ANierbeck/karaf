@@ -24,13 +24,23 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.osgi.service.url.AbstractURLStreamHandlerService;
+import org.osgi.service.url.URLStreamHandlerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * URL handler for features
  */
+@Component(name = "org.apache.karaf.urlhandler.features", description = "Karaf Features Url Handler", immediate = true)
+@Service(URLStreamHandlerService.class)
+@Properties(
+        @Property(name = "url.handler.protocol", value = "feature")
+)
 public class FeatureURLHandler extends AbstractURLStreamHandlerService {
 
     private final Logger logger = LoggerFactory.getLogger(FeatureURLHandler.class);
