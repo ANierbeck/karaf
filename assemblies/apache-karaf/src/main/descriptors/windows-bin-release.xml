@@ -234,6 +234,7 @@
             </outputFileNameMapping>
             <includes>
                 <include>org.apache.karaf.shell:org.apache.karaf.shell.console</include>
+                <include>org.apache.karaf.shell:org.apache.karaf.shell.blueprint</include>
                 <include>org.apache.karaf.shell:org.apache.karaf.shell.dev</include>
                 <include>org.apache.karaf.shell:org.apache.karaf.shell.osgi</include>
                 <include>org.apache.karaf.shell:org.apache.karaf.shell.log</include>

@@ -32,6 +32,10 @@ import java.util.List;
 import javax.security.auth.Subject;
 
 import jline.Terminal;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.service.command.CommandProcessor;
 import org.apache.felix.service.command.CommandSession;
 import org.apache.felix.service.command.Function;
@@ -44,41 +48,26 @@ import org.osgi.framework.ServiceRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Component(name = "org.apache.karaf.shell.console.factory", description = "Karaf Shell Console Factory", immediate = true)
 public class ConsoleFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsoleFactory.class);
+    private static final String START_LOCAL_CONSOLE_PROPERTY = "karaf.startLocalConsole";
 
-    BundleContext bundleContext;
+    private BundleContext bundleContext;
+    @Reference
     private CommandProcessor commandProcessor;
     private TerminalFactory terminalFactory;
-    Console console;
-    private boolean start;
+    private Console console;
+    private boolean start = Boolean.parseBoolean(System.getProperty(START_LOCAL_CONSOLE_PROPERTY, "false"));
     private ServiceRegistration registration;
     private SshAgent local;
 
-    public void setBundleContext(BundleContext bundleContext) {
+
+    @Activate
+    protected void start(BundleContext bundleContext) throws Exception {
         this.bundleContext = bundleContext;
-    }
-
-    public synchronized void registerCommandProcessor(CommandProcessor commandProcessor) throws Exception {
-        this.commandProcessor = commandProcessor;
-        start();
-    }
-
-    public synchronized void unregisterCommandProcessor(CommandProcessor commandProcessor) throws Exception {
-        this.commandProcessor = null;
-        stop();
-    }
-
-    public void setTerminalFactory(TerminalFactory terminalFactory) {
-        this.terminalFactory = terminalFactory;
-    }
-
-    public void setStart(boolean start) {
-        this.start = start;
-    }
-
-    protected void start() throws Exception {
+        this.terminalFactory = new TerminalFactory();
         if (start) {
             Subject subject = new Subject();
             final String user = "karaf";
@@ -90,6 +79,37 @@ public class ConsoleFactory {
                 }
             });
         }
+    }
+
+    @Deactivate
+    void stop() throws Exception {
+        if(registration != null) {
+            registration.unregister();
+        }
+        if (terminalFactory != null) {
+            terminalFactory.destroy();
+        }
+        if (console != null) {
+            console.close(false);
+        }
+    }
+
+
+    @Deactivate
+    void deactivate() throws Exception {
+        this.terminalFactory.destroy();
+    }
+
+    public void setBundleContext(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
+    }
+
+    public void setTerminalFactory(TerminalFactory terminalFactory) {
+        this.terminalFactory = terminalFactory;
+    }
+
+    public void setStart(boolean start) {
+        this.start = start;
     }
 
     public static Object invokePrivateMethod(Object o, String methodName, Object[] params) throws Exception {
@@ -182,18 +202,6 @@ public class ConsoleFactory {
         } catch (Throwable e) {
             LOGGER.warn("Error starting ssh agent for local console", e);
             return null;
-        }
-    }
-
-    protected void stop() throws Exception {
-        if (registration != null) {
-            registration.unregister();
-        }
-        // The bundle is stopped
-        // so close the console and remove the callback so that the
-        // osgi framework isn't stopped
-        if (console != null) {
-            console.close(false);
         }
     }
 

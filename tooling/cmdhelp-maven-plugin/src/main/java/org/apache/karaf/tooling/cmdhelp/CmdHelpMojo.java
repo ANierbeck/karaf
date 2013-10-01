@@ -42,14 +42,13 @@ import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
 import org.apache.felix.gogo.commands.basic.ActionPreparator;
-import org.apache.karaf.shell.console.commands.BlueprintCommand;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.apache.karaf.shell.blueprint.commands.BlueprintCommand;
 import org.apache.xbean.finder.ClassFinder;
 import org.apache.felix.service.command.CommandSession;
-import org.fusesource.jansi.Ansi;
 
 /**
  * Generates help (in scalate or docbook format) for Karaf commands

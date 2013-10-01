@@ -25,35 +25,57 @@ import java.io.PrintStream;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import jline.Terminal;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.ReferenceCardinality;
+import org.apache.felix.scr.annotations.ReferencePolicy;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.service.command.CommandSession;
 import org.apache.karaf.shell.console.HelpProvider;
 import org.apache.karaf.shell.console.SubShell;
 import org.fusesource.jansi.Ansi;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 
 import static org.apache.felix.gogo.commands.basic.DefaultActionPreparator.printFormatted;
 
+@Component(name = "org.apache.karaf.shell.console.help.subshell", description = "Karaf Shell Console Subshell Help Provider", immediate = true)
+@Service(HelpProvider.class)
+@org.apache.felix.scr.annotations.Properties(
+        @Property(name = "ranking", value = "-10")
+)
 public class SubShellHelpProvider implements HelpProvider {
 
-    private BundleContext context;
-    private ServiceTracker tracker;
+    @Reference(referenceInterface = SubShell.class,
+            policy = ReferencePolicy.DYNAMIC, cardinality = ReferenceCardinality.OPTIONAL_MULTIPLE,
+            bind = "bindSubshell", unbind = "unbindSubShell"
+    )
+    private final Map<String, SubShell> subshells = new HashMap<String, SubShell>();
 
-    public void setContext(BundleContext context) {
-        this.context = context;
-    }
-
+    @Activate
     public void start() {
-        tracker = new ServiceTracker(context, SubShell.class.getName(), null);
-        tracker.open();
     }
-    
+
+    @Deactivate
     public void stop() {
-        tracker.close();
+    }
+
+    void bindSubshell(SubShell subShell) {
+        subshells.put(subShell.getName(), subShell);
+    }
+
+    void unbindSubShell(SubShell subShell) {
+        subshells.remove(subShell.getName());
     }
 
     public String getHelp(CommandSession session, String path) {
@@ -64,13 +86,12 @@ public class SubShellHelpProvider implements HelpProvider {
                 return null;
             }
         }
-        for (ServiceReference ref : tracker.getServiceReferences()) {
-            if (path.equals(ref.getProperty("name"))) {
+            if (subshells.containsKey(path)) {
+                SubShell subShell = subshells.get(path);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                printSubShellHelp(session, ref.getBundle(), (SubShell) tracker.getService(ref), new PrintStream(baos, true));
+                printSubShellHelp(session, FrameworkUtil.getBundle(subShell.getClass()), subShell, new PrintStream(baos, true));
                 return baos.toString();
             }
-        }
         return null;
     }
 

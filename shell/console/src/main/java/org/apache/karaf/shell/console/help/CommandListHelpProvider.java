@@ -32,6 +32,11 @@ import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.basic.AbstractCommand;
 import org.apache.felix.gogo.commands.basic.DefaultActionPreparator;
 import org.apache.felix.gogo.runtime.CommandSessionImpl;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.service.command.CommandSession;
 import org.apache.felix.service.command.Function;
 import org.apache.karaf.shell.console.HelpProvider;
@@ -40,7 +45,20 @@ import org.fusesource.jansi.Ansi;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
+@Component(name = "org.apache.karaf.shell.console.help.cmdlist", description = "Karaf Shell Console Command List Help Provider", immediate = true)
+@Service(HelpProvider.class)
+@org.apache.felix.scr.annotations.Properties(
+        @Property(name = "ranking", value = "-20")
+)
 public class CommandListHelpProvider implements HelpProvider {
+
+    @Activate
+    void activate(){
+    }
+
+    @Deactivate
+    void deactivate(){
+    }
 
     public String getHelp(CommandSession session, String path) {
         if (path.indexOf('|') > 0) {

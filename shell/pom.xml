@@ -46,6 +46,7 @@
         <module>dev</module>
         <module>scr</module>
         <module>web</module>
+        <module>blueprint</module>
     </modules>
 
 </project>

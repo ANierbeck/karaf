@@ -22,14 +22,32 @@ import java.io.PrintStream;
 import java.util.Map;
 
 import jline.Terminal;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.service.command.CommandSession;
 import org.apache.karaf.shell.console.HelpProvider;
 
 import static org.apache.felix.gogo.commands.basic.DefaultActionPreparator.printFormatted;
 
+@Component(name = "org.apache.karaf.shell.console.help.simple", description = "Karaf Shell Console Simple Help Provider", immediate = true)
+@Service(HelpProvider.class)
+@org.apache.felix.scr.annotations.Properties(
+        @Property(name = "ranking", value = "-7")
+)
 public class SimpleHelpProvider implements HelpProvider {
     
     private Map<String, String> help;
+
+    @Activate
+    void activate(){
+    }
+
+    @Deactivate
+    void deactivate(){
+    }
 
     public Map<String, String> getHelp() {
         return help;

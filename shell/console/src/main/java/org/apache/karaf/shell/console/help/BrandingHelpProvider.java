@@ -22,12 +22,20 @@ import java.io.PrintStream;
 import java.util.Properties;
 
 import jline.Terminal;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.service.command.CommandSession;
 import org.apache.karaf.shell.console.HelpProvider;
 import org.apache.karaf.shell.console.util.Branding;
 
 import static org.apache.felix.gogo.commands.basic.DefaultActionPreparator.printFormatted;
 
+@Component(name = "org.apache.karaf.shell.console.help.branding", description = "Karaf Shell Console Branding Help Provider", immediate = true)
+@Service(HelpProvider.class)
+@org.apache.felix.scr.annotations.Properties(
+        @Property(name = "ranking", value = "-5")
+)
 public class BrandingHelpProvider implements HelpProvider {
 
     private Properties branding;

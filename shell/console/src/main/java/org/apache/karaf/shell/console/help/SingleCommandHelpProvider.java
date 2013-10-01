@@ -23,13 +23,33 @@ import java.io.PrintStream;
 import java.util.Set;
 
 import org.apache.felix.gogo.runtime.CommandSessionImpl;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.service.command.CommandSession;
 import org.apache.felix.service.threadio.ThreadIO;
 import org.apache.karaf.shell.console.HelpProvider;
 
+@Component(name = "org.apache.karaf.shell.console.help.single", description = "Karaf Shell Console Single Command Help Provider", immediate = true)
+@Service(HelpProvider.class)
+@org.apache.felix.scr.annotations.Properties(
+        @Property(name = "ranking", value = "-10")
+)
 public class SingleCommandHelpProvider implements HelpProvider {
 
+    @Reference
     private ThreadIO io;
+
+    @Activate
+    void activate(){
+    }
+
+    @Deactivate
+    void deactivate(){
+    }
 
     public void setIo(ThreadIO io) {
         this.io = io;

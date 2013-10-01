@@ -26,6 +26,9 @@ import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.Formatter;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Service;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
@@ -34,11 +37,14 @@ import org.apache.felix.service.command.Converter;
 import org.apache.felix.service.command.Function;
 import org.osgi.service.startlevel.StartLevel;
 
+@Component(name = "org.apache.karaf.shell.console.converter", description = "Karaf Shell Console Converter", immediate = true)
+@Service(Converter.class)
 public class Converters implements Converter
 {
-    private final BundleContext context;
+    private BundleContext context;
 
-    public Converters(BundleContext context)
+    @Activate
+    void activate(BundleContext context)
     {
         this.context = context;
     }

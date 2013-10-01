@@ -120,6 +120,10 @@
         </dependency>
         <dependency>
             <groupId>org.apache.karaf.shell</groupId>
+            <artifactId>org.apache.karaf.shell.blueprint</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.karaf.shell</groupId>
             <artifactId>org.apache.karaf.shell.obr</artifactId>
         </dependency>
         <dependency>
