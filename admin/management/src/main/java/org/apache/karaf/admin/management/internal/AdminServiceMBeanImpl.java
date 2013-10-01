@@ -20,22 +20,48 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 import javax.management.StandardMBean;
 import javax.management.openmbean.TabularData;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.karaf.admin.management.AdminServiceMBean;
 import org.apache.karaf.admin.AdminService;
 import org.apache.karaf.admin.Instance;
 import org.apache.karaf.admin.InstanceSettings;
 import org.apache.karaf.admin.management.codec.JmxInstance;
 
+@Component(name = "org.apache.karaf.mbeans.admin", description = "Karaf Admin Service", immediate = true)
 public class AdminServiceMBeanImpl extends StandardMBean implements AdminServiceMBean {
 
+    private static final String OBJECT_NAME = "org.apache.karaf:type=admin,name=" + System.getProperty("karaf.name");
+
+    @Reference
     private AdminService adminService;
+
+    @Reference
+    private MBeanServer mBeanServer;
 
     public AdminServiceMBeanImpl() throws NotCompliantMBeanException {
         super(AdminServiceMBean.class);
+    }
+
+    @Activate
+    void activate() throws Exception {
+        mBeanServer.registerMBean(this, new ObjectName(OBJECT_NAME));
+    }
+
+    @Deactivate
+    void deactivate() throws Exception {
+        mBeanServer.unregisterMBean(new ObjectName(OBJECT_NAME));
     }
 
     public AdminService getAdminService() {

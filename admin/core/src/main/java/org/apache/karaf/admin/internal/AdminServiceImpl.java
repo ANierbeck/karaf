@@ -17,8 +17,6 @@
 package org.apache.karaf.admin.internal;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -29,11 +27,9 @@ import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.RandomAccessFile;
 import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -41,9 +37,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.admin.AdminService;
 import org.apache.karaf.admin.Instance;
 import org.apache.karaf.admin.InstanceSettings;
@@ -55,6 +53,8 @@ import org.fusesource.jansi.Ansi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Component(name = "org.apache.karaf.admin", description = "Karaf Admin Service", immediate = true)
+@Service(AdminService.class)
 public class AdminServiceImpl implements AdminService {
 
     public static final String STORAGE_FILE = "instance.properties";
@@ -77,11 +77,28 @@ public class AdminServiceImpl implements AdminService {
 
     private static final String DEFAULT_SHUTDOWN_COMMAND = "SHUTDOWN";
 
+    private static final String KARAF_HOME = "karaf.home";
+
+    private static final String KARAF_INSTANCES = "karaf.instances";
+
     private LinkedHashMap<String, InstanceImpl> proxies = new LinkedHashMap<String, InstanceImpl>();
 
     private File storageLocation;
 
     private long stopTimeout = 30000;
+
+    @Activate
+    void activate() {
+        if (System.getProperties().containsKey(KARAF_INSTANCES)) {
+            storageLocation = new File(System.getProperty(KARAF_INSTANCES));
+        } else if (System.getProperties().containsKey(KARAF_HOME)) {
+            storageLocation = new File(new File(KARAF_HOME), "instances");
+        }
+    }
+
+    @Deactivate
+    void deactivate() {
+    }
 
     static class InstanceState {
         String name;
