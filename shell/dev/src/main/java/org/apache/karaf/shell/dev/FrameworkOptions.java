@@ -18,20 +18,40 @@ package org.apache.karaf.shell.dev;
 
 import java.io.File;
 
+import aQute.bnd.annotation.Activate;
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.utils.properties.Properties;
+import org.apache.karaf.shell.console.CompletableFunction;
 import org.apache.karaf.shell.console.OsgiCommandSupport;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.apache.karaf.shell.dev.framework.Equinox;
 import org.apache.karaf.shell.dev.framework.Felix;
 import org.apache.karaf.shell.dev.framework.Framework;
+import org.osgi.framework.BundleContext;
 
 /**
  * Command for enabling/disabling debug logging on the OSGi framework
  */
-@Command(scope = "dev", name = "framework", description = "OSGi Framework options.")
-public class FrameworkOptions extends OsgiCommandSupport {
+@Command(scope = FrameworkOptions.SCOPE_VALUE, name = FrameworkOptions.FUNCTION_VALUE, description = FrameworkOptions.DESCRIPTION)
+@Component(name = FrameworkOptions.ID, description = FrameworkOptions.DESCRIPTION)
+@Service(CompletableFunction.class)
+@org.apache.felix.scr.annotations.Properties(
+        {
+                @Property(name = ComponentAction.SCOPE, value = FrameworkOptions.SCOPE_VALUE),
+                @Property(name = ComponentAction.FUNCTION, value = FrameworkOptions.FUNCTION_VALUE)
+        }
+)
+public class FrameworkOptions extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.dev.framework";
+    public static final String SCOPE_VALUE = "dev";
+    public static final String FUNCTION_VALUE =  "framework";
+    public static final String DESCRIPTION = "OSGi Framework options.";
 
     private static final String KARAF_BASE = System.getProperty("karaf.base");
 
@@ -44,8 +64,19 @@ public class FrameworkOptions extends OsgiCommandSupport {
     @Argument(name = "framework", required = false, description = "Name of the OSGi framework to use")
     String framework;
 
+    private BundleContext bundleContext;
+
+    @Activate
+    void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
+    }
+
+    void deactivate() {
+
+    }
+
     @Override
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
 
         if (!debug^nodebug && framework == null) {
             System.out.printf("Current OSGi framework is %s%n", getFramework().getName());

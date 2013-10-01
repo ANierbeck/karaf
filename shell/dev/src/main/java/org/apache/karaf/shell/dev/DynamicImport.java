@@ -25,7 +25,13 @@ import java.util.Set;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
 import org.apache.karaf.shell.console.OsgiCommandSupport;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.ops4j.pax.url.wrap.Handler;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
@@ -39,8 +45,21 @@ import org.slf4j.LoggerFactory;
  * Command for enabling/disabling debug logging on a bundle and calculating the difference in
  * wired imports.
  */
-@Command(scope = "dev", name = "dynamic-import", description = "Enables/disables dynamic-import for a given bundle.")
+@Command(scope = DynamicImport.SCOPE_VALUE, name = DynamicImport.FUNCTION_VALUE, description = DynamicImport.DESCRIPTION)
+@Component(name = DynamicImport.ID, description = DynamicImport.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties(
+        {
+                @Property(name = ComponentAction.SCOPE, value = DynamicImport.SCOPE_VALUE),
+                @Property(name = ComponentAction.FUNCTION, value = DynamicImport.FUNCTION_VALUE)
+        }
+)
 public class DynamicImport extends AbstractBundleCommand {
+
+    public static final String ID = "org.apache.karaf.shell.dev.dynamicimport";
+    public static final String SCOPE_VALUE = "dev";
+    public static final String FUNCTION_VALUE =  "dynamic-import";
+    public static final String DESCRIPTION = "Enables/disables dynamic-import for a given bundle.";
 
     private final Logger LOG = LoggerFactory.getLogger(DynamicImport.class);
 

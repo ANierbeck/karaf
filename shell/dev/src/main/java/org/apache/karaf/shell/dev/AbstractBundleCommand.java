@@ -21,9 +21,15 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import aQute.bnd.annotation.Deactivate;
 import org.apache.felix.gogo.commands.Argument;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.karaf.shell.console.OsgiCommandSupport;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.ExportedPackage;
 import org.osgi.service.packageadmin.PackageAdmin;
@@ -33,25 +39,28 @@ import org.osgi.service.packageadmin.PackageAdmin;
  *
  * It also provides convient access to the PackageAdmin service
  */
-public abstract class AbstractBundleCommand extends OsgiCommandSupport {
+@Component(name = "org.apache.karaf.shell.dev.bundle.base", componentAbstract = true)
+public abstract class AbstractBundleCommand extends ComponentAction {
 
     @Argument(index = 0, name = "id", description = "The bundle ID", required = true)
     Long id;
 
+    @Reference
     private PackageAdmin admin;
 
+    private BundleContext bundleContext;
+
+    @Activate
+    void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
+    }
+
+    @Deactivate
+    void deactivate(){
+    }
+
     @Override
-    protected Object doExecute() throws Exception {
-        // Get package admin service.
-        ServiceReference ref = getBundleContext().getServiceReference(PackageAdmin.class.getName());
-        if (ref == null) {
-            System.out.println("PackageAdmin service is unavailable.");
-            return null;
-        }
-
-        // using the getService call ensures that the reference will be released at the end
-        admin = getService(PackageAdmin.class, ref);
-
+    public Object doExecute() throws Exception {
         Bundle bundle = getBundleContext().getBundle(id);
         if (bundle == null) {
             System.err.println("Bundle ID " + id + " is invalid");
@@ -89,5 +98,9 @@ public abstract class AbstractBundleCommand extends OsgiCommandSupport {
 
     protected PackageAdmin getPackageAdmin() {
         return admin;    
+    }
+
+    protected BundleContext getBundleContext() {
+        return bundleContext;
     }
 }

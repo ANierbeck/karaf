@@ -18,10 +18,17 @@ package org.apache.karaf.shell.dev;
 
 import java.util.concurrent.TimeoutException;
 
+import aQute.bnd.annotation.Activate;
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
-import org.apache.karaf.shell.console.OsgiCommandSupport;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
@@ -31,8 +38,21 @@ import org.osgi.util.tracker.ServiceTracker;
 /**
  * Command that can be used to wait for an OSGi service.
  */
-@Command(scope = "dev", name = "wait-for-service", description = "Wait for a given OSGi service.")
-public class WaitForService extends OsgiCommandSupport {
+@Command(scope = WaitForService.SCOPE_VALUE, name = WaitForService.FUNCTION_VALUE, description = WaitForService.DESCRIPTION)
+@Component(name = WaitForService.ID, description = WaitForService.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties(
+        {
+                @Property(name = ComponentAction.SCOPE, value = WaitForService.SCOPE_VALUE),
+                @Property(name = ComponentAction.FUNCTION, value = WaitForService.FUNCTION_VALUE)
+        }
+)
+public class WaitForService extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.dev.waitforservice";
+    public static final String SCOPE_VALUE = "dev";
+    public static final String FUNCTION_VALUE =  "wait-for-service";
+    public static final String DESCRIPTION = "\"Wait for a given OSGi service.";
 
     @Option(name = "-e", aliases = { "--exception" }, description = "throw an exception if the service is not found after the timeout")
     boolean exception;
@@ -43,8 +63,15 @@ public class WaitForService extends OsgiCommandSupport {
     @Argument(name = "service", description="The service class or filter", required = true, multiValued = false)
     String service;
 
+    private BundleContext bundleContext;
+
+    @Activate
+    void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
+    }
+
     @Override
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         ServiceTracker tracker = null;
         try {
             String filter = service;

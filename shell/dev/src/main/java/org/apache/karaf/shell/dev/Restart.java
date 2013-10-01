@@ -16,21 +16,49 @@
  */
 package org.apache.karaf.shell.dev;
 
+import aQute.bnd.annotation.Activate;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
 import org.apache.karaf.shell.console.OsgiCommandSupport;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+import org.osgi.framework.BundleContext;
 
 /**
  * A command to restart karaf
  */
-@Command(scope = "dev", name = "restart", description = "Restart Karaf.")
-public class Restart  extends OsgiCommandSupport {
+@Command(scope = Restart.SCOPE_VALUE, name = Restart.FUNCTION_VALUE, description = Restart.DESCRIPTION)
+@Component(name = Restart.ID, description = Restart.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties(
+        {
+                @Property(name = ComponentAction.SCOPE, value = Restart.SCOPE_VALUE),
+                @Property(name = ComponentAction.FUNCTION, value = Restart.FUNCTION_VALUE)
+        }
+)
+public class Restart  extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.dev.restart";
+    public static final String SCOPE_VALUE = "dev";
+    public static final String FUNCTION_VALUE =  "restart";
+    public static final String DESCRIPTION = "Restart Karaf.";
 
     @Option(name = "-c", aliases = { "--clean" }, description = "Force a clean restart by deleting the working directory")
     private boolean clean;
 
+    private BundleContext bundleContext;
+
+    @Activate
+    void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
+    }
+
     @Override
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         System.setProperty("karaf.restart", "true");
         System.setProperty("karaf.restart.clean", Boolean.toString(clean));
         bundleContext.getBundle(0).stop();

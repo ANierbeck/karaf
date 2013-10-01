@@ -23,7 +23,9 @@ import org.apache.felix.gogo.commands.basic.AbstractCommand;
 import org.apache.felix.service.command.CommandSession;
 import org.apache.karaf.shell.console.CompletableFunction;
 import org.apache.karaf.shell.console.Completer;
+import org.apache.karaf.shell.console.completer.NullCompleter;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,6 +36,8 @@ public abstract class ComponentAction extends AbstractCommand implements Action,
 
     public static final String SCOPE = "osgi.command.scope";
     public static final String FUNCTION = "osgi.command.function";
+
+    private static final NullCompleter NULL_COMPLETER = new NullCompleter();
 
     private final List<Completer> completers = new CopyOnWriteArrayList<Completer>();
     private final ConcurrentMap<String, Completer> optionalCompleters = new ConcurrentHashMap<String, Completer>();
@@ -72,7 +76,7 @@ public abstract class ComponentAction extends AbstractCommand implements Action,
     }
 
     public List<Completer> getCompleters() {
-        return completers;
+        return !completers.isEmpty() ? completers : Arrays.<Completer>asList(NULL_COMPLETER);
     }
 
     public Map<String, Completer> getOptionalCompleters() {

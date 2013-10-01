@@ -26,7 +26,14 @@ import java.util.Set;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.ConfigurationPolicy;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
 import org.apache.karaf.shell.console.OsgiCommandSupport;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.apache.karaf.shell.dev.util.Bundles;
 import org.apache.karaf.shell.dev.util.Import;
 import org.apache.karaf.shell.dev.util.Node;
@@ -42,15 +49,29 @@ import org.slf4j.LoggerFactory;
  * Command for showing the full tree of bundles that have been used to resolve
  * a given bundle.
  */
-@Command(scope = "dev", name = "show-tree", description = "Shows the tree of bundles based on the wiring information.")
+@Command(scope = ShowBundleTree.SCOPE_VALUE, name = ShowBundleTree.FUNCTION_VALUE, description = ShowBundleTree.DESCRIPTION)
+@Component(name = ShowBundleTree.ID, description = ShowBundleTree.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties(
+        {
+                @Property(name = ComponentAction.SCOPE, value = ShowBundleTree.SCOPE_VALUE),
+                @Property(name = ComponentAction.FUNCTION, value = ShowBundleTree.FUNCTION_VALUE)
+        }
+)
 public class ShowBundleTree extends AbstractBundleCommand {
 
+    public static final String ID = "org.apache.karaf.shell.dev.showtree";
+    public static final String SCOPE_VALUE = "dev";
+    public static final String FUNCTION_VALUE =  "show-tree";
+    public static final String DESCRIPTION = "Shows the tree of bundles based on the wiring information.";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ShowBundleTree.class);
+
 
     private Tree<Bundle> tree;
 
     @Override
-    protected void doExecute(Bundle bundle) throws Exception {
+    public void doExecute(Bundle bundle) throws Exception {
         long start = System.currentTimeMillis();
         // let's do the real work here
         printHeader(bundle);
