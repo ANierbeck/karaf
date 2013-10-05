@@ -19,26 +19,53 @@ package org.apache.karaf.shell.web;
 import java.util.Map;
 
 import org.apache.felix.gogo.commands.Command;
-import org.apache.karaf.shell.console.OsgiCommandSupport;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.ops4j.pax.web.service.spi.WebEvent;
-import org.ops4j.pax.web.service.spi.WebEvent.WebTopic;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.service.startlevel.StartLevel;
 
-@Command(scope = "web", name = "list", description = "Lists details for war bundles.")
-public class WebListCommand extends OsgiCommandSupport {
-	
+@Command(scope = WebListCommand.SCOPE_VALUE, name = WebListCommand.FUNCTION_VALUE, description = WebListCommand.DESCRIPTION)
+@Component(name = WebListCommand.ID, description = WebListCommand.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = WebListCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = WebListCommand.FUNCTION_VALUE)
+})
+public class WebListCommand extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.web.list";
+    public static final String SCOPE_VALUE = "web";
+    public static final String FUNCTION_VALUE =  "list";
+    public static final String DESCRIPTION = "Lists details for war bundles.";
+
+    @Reference
 	private StartLevel startLevelService;
-	
+
+    @Reference
 	private WebEventHandler eventHandler;
+
+    private BundleContext bundleContext;
+
+    @Activate
+    void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
+    }
 
 	/* (non-Javadoc)
 	 * @see org.apache.karaf.shell.war.WarCommandSupport#doExecute(org.osgi.service.packageadmin.PackageAdmin)
 	 */
 	@Override
-	protected Object doExecute() {
-		Bundle[] bundles = getBundleContext().getBundles();
+	public Object doExecute() {
+		Bundle[] bundles = bundleContext.getBundles();
 		Map<Long, WebEvent> bundleEvents = eventHandler.getBundleEvents();
 		if (bundles != null) {
 			String level = (startLevelService == null) ? "" : "  Level ";
