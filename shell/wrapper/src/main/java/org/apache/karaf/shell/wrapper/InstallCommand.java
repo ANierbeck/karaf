@@ -28,16 +28,34 @@ import java.util.Scanner;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.ConfigurationPolicy;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.shell.console.AbstractAction;
 import org.apache.felix.gogo.commands.Option;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.fusesource.jansi.Ansi;
 
 /**
  * Installs this Karaf instance as a service in your operating systems.
  */
-@Command(scope = "wrapper", name = "install", description = "Install the container as a system service in the OS.")
-public class InstallCommand extends AbstractAction {
+@Command(scope = InstallCommand.SCOPE_VALUE, name = InstallCommand.FUNCTION_VALUE, description = InstallCommand.DESCRIPTION)
+@Component(name = InstallCommand.ID, description = InstallCommand.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = InstallCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = InstallCommand.FUNCTION_VALUE)
+})
+public class InstallCommand extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.wrapper.install";
+    public static final String SCOPE_VALUE = "wrapper";
+    public static final String FUNCTION_VALUE =  "install";
+    public static final String DESCRIPTION = "Install the container as a system service in the OS.";
 
     @Option(name = "-n", aliases = {"--name"}, description = "The service name that will be used when installing the service. (Default: karaf)", required = false, multiValued = false)
     private String name = "karaf";
@@ -51,7 +69,7 @@ public class InstallCommand extends AbstractAction {
     @Option(name = "-s", aliases = {"--start-type"}, description = "Mode in which the service is installed. AUTO_START or DEMAND_START (Default: AUTO_START)", required = false, multiValued = false)
     private String startType = "AUTO_START";
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
 
         try {
             String name = getName();
