@@ -18,7 +18,13 @@ package org.apache.karaf.shell.osgi;
 
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.service.command.Function;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
@@ -28,8 +34,19 @@ import java.net.URI;
 import java.net.URL;
 import java.util.List;
 
-@Command(scope = "osgi", name = "bundle-services", description = "List OSGi services per bundle")
+@Command(scope = ListBundleServices.SCOPE_VALUE, name = ListBundleServices.FUNCTION_VALUE, description = ListBundleServices.DESCRIPTION)
+@Component(name = ListBundleServices.ID, description = ListBundleServices.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ListBundleServices.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ListBundleServices.FUNCTION_VALUE)
+})
 public class ListBundleServices extends BundlesCommand {
+
+    public static final String ID = "org.apache.karaf.shell.osgi.bundleservices";
+    public static final String SCOPE_VALUE = "osgi";
+    public static final String FUNCTION_VALUE =  "bundle-services";
+    public static final String DESCRIPTION = "List OSGi services per bundle";
 
     @Option(name = "-a", aliases = {}, description = "Shows all services. (By default Karaf commands are hidden)", required = false, multiValued = false)
     boolean showAll;

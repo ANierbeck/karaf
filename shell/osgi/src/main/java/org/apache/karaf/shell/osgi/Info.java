@@ -22,11 +22,28 @@ import java.net.URL;
 import java.util.List;
 
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.apache.karaf.util.StringEscapeUtils;
 import org.osgi.framework.Bundle;
 
-@Command(scope = "osgi", name = "info", description = "Displays detailed information of a given bundle.")
+@Command(scope = Info.SCOPE_VALUE, name = Info.FUNCTION_VALUE, description = Info.DESCRIPTION)
+@Component(name = Info.ID, description = Info.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = Info.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = Info.FUNCTION_VALUE)
+})
 public class Info extends BundlesCommandOptional {
+
+    public static final String ID = "org.apache.karaf.shell.osgi.info";
+    public static final String SCOPE_VALUE = "osgi";
+    public static final String FUNCTION_VALUE =  "info";
+    public static final String DESCRIPTION = "Displays detailed information of a given bundle.";
 
     protected void doExecute(List<Bundle> bundles) throws Exception {
         if (bundles == null) {

@@ -16,12 +16,18 @@
  */
 package org.apache.karaf.shell.osgi;
 
-import org.apache.karaf.shell.console.OsgiCommandSupport;
 import org.apache.felix.gogo.commands.Option;
 import org.apache.felix.gogo.commands.Argument;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 
-public abstract class BundleCommand extends OsgiCommandSupport {
+@Component(name = BundleCommand.ID, componentAbstract = true)
+public abstract class BundleCommand extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.osgi.base";
 
     @Argument(index = 0, name = "id", description = "The bundle ID or name or name/version", required = true, multiValued  = false)
     String id;
@@ -29,8 +35,16 @@ public abstract class BundleCommand extends OsgiCommandSupport {
     @Option(name = "--force", aliases = {}, description = "Forces the command to execute", required = false, multiValued = false)
     boolean force;
 
-    protected Object doExecute() throws Exception {
-        BundleSelector selector = new BundleSelector(getBundleContext(), session);
+    private BundleContext bundleContext;
+
+    @Activate
+    void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
+    }
+
+
+    public Object doExecute() throws Exception {
+        BundleSelector selector = new BundleSelector(getBundleContext(), getSession());
         Bundle bundle = selector.getBundle(id, force);
 
         if (bundle == null) {
@@ -43,4 +57,8 @@ public abstract class BundleCommand extends OsgiCommandSupport {
     }
 
     protected abstract void doExecute(Bundle bundle) throws Exception;
+
+    public BundleContext getBundleContext() {
+        return bundleContext;
+    }
 }

@@ -16,21 +16,46 @@
  */
 package org.apache.karaf.shell.osgi;
 
-import java.util.Collection;
-
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
-import org.apache.karaf.shell.console.OsgiCommandSupport;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.wiring.BundleWiring;
 
-@Command(scope = "osgi", name = "find-class", description = "Locates a specified class in any deployed bundle")
-public class FindClass extends OsgiCommandSupport {
+import java.util.Collection;
+
+@Command(scope = FindClass.SCOPE_VALUE, name = FindClass.FUNCTION_VALUE, description = FindClass.DESCRIPTION)
+@Component(name = FindClass.ID, description = FindClass.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = FindClass.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = FindClass.FUNCTION_VALUE)
+})
+public class FindClass extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.osgi.findclass";
+    public static final String SCOPE_VALUE = "osgi";
+    public static final String FUNCTION_VALUE =  "find-class";
+    public static final String DESCRIPTION = "Locates a specified class in any deployed bundle";
 
     @Argument(index = 0, name = "className", description = "Class name or partial class name to be found", required = true, multiValued = false)
     String className;
 
-    protected Object doExecute() throws Exception {
+    private BundleContext bundleContext;
+
+    @Activate
+    void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
+    }
+
+    public Object doExecute() throws Exception {
         findResource();
         return null;
     }

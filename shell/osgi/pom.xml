@@ -61,24 +61,14 @@
 
         <dependency>
             <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.utils</artifactId>
+            <artifactId>org.apache.felix.scr.annotations</artifactId>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.osgi</groupId>
-            <artifactId>spring-osgi-core</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.osgi</groupId>
-            <artifactId>spring-osgi-extender</artifactId>
-            <optional>true</optional>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.utils</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
@@ -111,9 +101,6 @@
                             org.springframework*;resolution:=optional,
                             *
                         </Import-Package>
-                        <DynamicImport-Package>
-                            org.springframework.*
-                        </DynamicImport-Package>
                         <Private-Package>
                             org.apache.karaf.util;-split-package:=merge-first,
                             org.apache.felix.utils*;-split-package:=merge-first,
@@ -121,6 +108,10 @@
                         </Private-Package>
                     </instructions>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-scr-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

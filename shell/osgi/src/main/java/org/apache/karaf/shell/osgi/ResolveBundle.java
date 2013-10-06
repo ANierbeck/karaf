@@ -18,13 +18,30 @@ package org.apache.karaf.shell.osgi;
 
 import java.util.List;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.PackageAdmin;
 import org.apache.felix.gogo.commands.Command;
 
-@Command(scope = "osgi", name = "resolve", description = "Resolve bundle(s).")
+@Command(scope = ResolveBundle.SCOPE_VALUE, name = ResolveBundle.FUNCTION_VALUE, description = ResolveBundle.DESCRIPTION)
+@Component(name = ResolveBundle.ID, description = ResolveBundle.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ResolveBundle.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ResolveBundle.FUNCTION_VALUE)
+})
 public class ResolveBundle extends BundlesCommandOptional {
+
+    public static final String ID = "org.apache.karaf.shell.osgi.resolve";
+    public static final String SCOPE_VALUE = "osgi";
+    public static final String FUNCTION_VALUE =  "resolve";
+    public static final String DESCRIPTION = "Resolve bundle(s).";
 
     protected void doExecute(List<Bundle> bundles) throws Exception {
         // Get package admin service.

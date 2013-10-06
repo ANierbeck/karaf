@@ -21,10 +21,27 @@ import java.net.URL;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.osgi.framework.Bundle;
 
-@Command(scope = "osgi", name = "update", description = "Update bundle.")
+@Command(scope = UpdateBundle.SCOPE_VALUE, name = UpdateBundle.FUNCTION_VALUE, description = UpdateBundle.DESCRIPTION)
+@Component(name = UpdateBundle.ID, description = UpdateBundle.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = UpdateBundle.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = UpdateBundle.FUNCTION_VALUE)
+})
 public class UpdateBundle extends BundleCommand {
+
+    public static final String ID = "org.apache.karaf.shell.osgi.update";
+    public static final String SCOPE_VALUE = "osgi";
+    public static final String FUNCTION_VALUE =  "update";
+    public static final String DESCRIPTION = "Update bundle.";
 
 	@Argument(index = 1, name = "location", description = "The bundles update location", required = false, multiValued = false)
 	String location;
@@ -37,5 +54,4 @@ public class UpdateBundle extends BundleCommand {
 			bundle.update();
 		}
 	}
-
 }

@@ -26,7 +26,7 @@ import org.apache.felix.gogo.commands.basic.AbstractCommand;
 import org.apache.felix.gogo.commands.basic.ActionPreparator;
 import org.apache.felix.gogo.commands.basic.DefaultActionPreparator;
 import org.apache.felix.service.command.CommandSession;
-import org.apache.karaf.shell.console.BlueprintContainerAware;
+import org.apache.karaf.shell.blueprint.BlueprintContainerAware;
 import org.apache.karaf.shell.console.BundleContextAware;
 import org.apache.karaf.shell.console.CompletableFunction;
 import org.apache.karaf.shell.console.Completer;

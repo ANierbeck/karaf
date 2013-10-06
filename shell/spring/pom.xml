@@ -10,40 +10,52 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.apache.karaf.shell</groupId>
-    <artifactId>org.apache.karaf.shell.blueprint</artifactId>
+    <artifactId>org.apache.karaf.shell.spring</artifactId>
     <packaging>bundle</packaging>
-    <name>Apache Karaf :: Shell :: Blueprint</name>
-    <description>This bundle provides Blueprint shell command support.</description>
-
-    <properties>
-        <appendedResourcesDirectory>${basedir}/../../etc/appended-resources</appendedResourcesDirectory>
-    </properties>
+    <name>Apache Karaf :: Shell :: Spring</name>
+    <description>This bundle provides Spring shell support.</description>
 
     <dependencies>
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.compendium</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.scr.annotations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.aries.blueprint</groupId>
-            <artifactId>org.apache.aries.blueprint.core</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.apache.karaf.shell</groupId>
             <artifactId>org.apache.karaf.shell.console</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.apache.karaf</groupId>
+            <artifactId>org.apache.karaf.util</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.gogo.runtime</artifactId>
+            <artifactId>org.apache.felix.scr.annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.utils</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.osgi</groupId>
+            <artifactId>spring-osgi-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.osgi</groupId>
+            <artifactId>spring-osgi-extender</artifactId>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
@@ -62,13 +74,6 @@
                     <include>**/*.info</include>
                 </includes>
             </resource>
-            <resource>
-                <directory>${project.basedir}/src/main/filtered-resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>**/*</include>
-                </includes>
-            </resource>
         </resources>
         <plugins>
             <plugin>
@@ -77,17 +82,18 @@
                 <configuration>
                     <instructions>
                         <Import-Package>
+                            org.apache.karaf.shell.console,
+                            org.springframework*;resolution:=optional,
                             *
                         </Import-Package>
-                        <Export-Package>
-                            org.apache.karaf.shell.blueprint*;-noimport:=true
-                        </Export-Package>
                     </instructions>
-                    <unpackBundle>true</unpackBundle>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-scr-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
-
 
 </project>

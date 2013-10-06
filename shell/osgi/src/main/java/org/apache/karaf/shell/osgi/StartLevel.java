@@ -16,18 +16,43 @@
  */
 package org.apache.karaf.shell.osgi;
 
-import org.apache.karaf.shell.console.OsgiCommandSupport;
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
-@Command(scope = "osgi", name = "start-level", description = "Gets or sets the system start level.")
-public class StartLevel extends OsgiCommandSupport {
+@Command(scope = StartLevel.SCOPE_VALUE, name = StartLevel.FUNCTION_VALUE, description = StartLevel.DESCRIPTION)
+@Component(name = StartLevel.ID, description = StartLevel.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = StartLevel.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = StartLevel.FUNCTION_VALUE)
+})
+public class StartLevel extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.osgi.startlevel";
+    public static final String SCOPE_VALUE = "osgi";
+    public static final String FUNCTION_VALUE =  "start-level";
+    public static final String DESCRIPTION = "Gets or sets the system start level.";
 
     @Argument(index = 0, name = "level", description = "The new system start level to set", required = false, multiValued = false)
     Integer level;
 
-    protected Object doExecute() throws Exception {
+    private BundleContext bundleContext;
+
+    @Activate
+    void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
+    }
+
+    public Object doExecute() throws Exception {
         // Get package admin service.
         ServiceReference ref = getBundleContext().getServiceReference(org.osgi.service.startlevel.StartLevel.class.getName());
         if (ref == null) {
@@ -54,4 +79,7 @@ public class StartLevel extends OsgiCommandSupport {
         return null;
     }
 
+    public BundleContext getBundleContext() {
+        return bundleContext;
+    }
 }

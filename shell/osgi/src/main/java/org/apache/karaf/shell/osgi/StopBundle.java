@@ -19,12 +19,29 @@ package org.apache.karaf.shell.osgi;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
 import org.apache.karaf.shell.console.MultiException;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.osgi.framework.Bundle;
 import org.apache.felix.gogo.commands.Command;
 
-@Command(scope = "osgi", name = "stop", description = "Stop bundle(s).")
+@Command(scope = StopBundle.SCOPE_VALUE, name = StopBundle.FUNCTION_VALUE, description = StopBundle.DESCRIPTION)
+@Component(name = StopBundle.ID, description = StopBundle.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = StopBundle.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = StopBundle.FUNCTION_VALUE)
+})
 public class StopBundle extends BundlesCommand {
+
+    public static final String ID = "org.apache.karaf.shell.osgi.stop";
+    public static final String SCOPE_VALUE = "osgi";
+    public static final String FUNCTION_VALUE =  "stop";
+    public static final String DESCRIPTION = "Stop bundle(s).";
 	
 	protected void doExecute(List<Bundle> bundles) throws Exception {
         if (bundles.isEmpty()) {

@@ -47,6 +47,7 @@
         <module>scr</module>
         <module>web</module>
         <module>blueprint</module>
+        <module>spring</module>
     </modules>
 
 </project>

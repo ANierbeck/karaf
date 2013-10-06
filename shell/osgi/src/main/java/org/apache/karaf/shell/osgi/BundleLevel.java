@@ -18,39 +18,47 @@ package org.apache.karaf.shell.osgi;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.ServiceReference;
 import org.osgi.service.startlevel.StartLevel;
 
-@Command(scope = "osgi", name = "bundle-level", description = "Gets or sets the start level of a given bundle.")
+@Command(scope = BundleLevel.SCOPE_VALUE, name = BundleLevel.FUNCTION_VALUE, description = BundleLevel.DESCRIPTION)
+@Component(name = BundleLevel.ID, description = BundleLevel.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = BundleLevel.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = BundleLevel.FUNCTION_VALUE)
+})
 public class BundleLevel extends BundleCommand {
+
+    public static final String ID = "org.apache.karaf.shell.osgi.bundlelevel";
+    public static final String SCOPE_VALUE = "osgi";
+    public static final String FUNCTION_VALUE =  "bundle-level";
+    public static final String DESCRIPTION = "Gets or sets the start level of a given bundle.";
 
     @Argument(index = 1, name = "startLevel", description = "The bundle's new start level", required = false, multiValued = false)
     Integer level;
 
-    protected void doExecute(Bundle bundle) throws Exception {
-        // Get package admin service.
-        ServiceReference ref = getBundleContext().getServiceReference(StartLevel.class.getName());
-        if (ref == null) {
-            System.out.println("StartLevel service is unavailable.");
-            return;
-        }
-        StartLevel sl = getService(StartLevel.class, ref);
-        if (sl == null) {
-            System.out.println("StartLevel service is unavailable.");
-            return;
-        }
+    @Reference
+    private StartLevel startLevel;
 
+    protected void doExecute(Bundle bundle) throws Exception {
         if (level == null) {
-            System.out.println("Level " + sl.getBundleStartLevel(bundle));
+            System.out.println("Level " + startLevel.getBundleStartLevel(bundle));
         }
-        else if ((level < 50) && (sl.getBundleStartLevel(bundle) > 50) && !force){
+        else if ((level < 50) && (startLevel.getBundleStartLevel(bundle) > 50) && !force){
             for (;;) {
                 StringBuffer sb = new StringBuffer();
                 System.err.println("You are about to designate bundle as a system bundle.  Do you wish to continue (yes/no): ");
                 System.err.flush();
                 for (;;) {
-                    int c = session.getKeyboard().read();
+                    int c = getSession().getKeyboard().read();
                     if (c < 0) {
                         break;
                     }
@@ -78,14 +86,14 @@ public class BundleLevel extends BundleCommand {
                 }
                 String str = sb.toString();
                 if ("yes".equals(str)) {
-                    sl.setBundleStartLevel(bundle, level);
+                    startLevel.setBundleStartLevel(bundle, level);
                     break;
                 } else if ("no".equals(str)) {
                     break;
                 }
             }
         } else {
-            sl.setBundleStartLevel(bundle, level);
+            startLevel.setBundleStartLevel(bundle, level);
         }
     }
 

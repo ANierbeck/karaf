@@ -17,10 +17,18 @@
 package org.apache.karaf.shell.osgi;
 
 import org.apache.felix.gogo.commands.Argument;
-import org.apache.felix.gogo.commands.Option;
-import org.apache.karaf.shell.console.OsgiCommandSupport;
 import org.apache.felix.gogo.commands.Command;
-import org.osgi.framework.Bundle;
+import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -28,8 +36,21 @@ import java.util.GregorianCalendar;
 /**
  * Command to shut down Karaf
  */
-@Command(scope = "osgi", name = "shutdown", description = "Shutdown the framework down.")
-public class Shutdown extends OsgiCommandSupport {
+@Command(scope = Shutdown.SCOPE_VALUE, name = Shutdown.FUNCTION_VALUE, description = Shutdown.DESCRIPTION)
+@Component(name = Shutdown.ID, description = Shutdown.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = Shutdown.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = Shutdown.FUNCTION_VALUE)
+})
+public class Shutdown extends ComponentAction {
+
+    private static final Logger log = LoggerFactory.getLogger(Shutdown.class);
+
+    public static final String ID = "org.apache.karaf.shell.osgi.shutdown";
+    public static final String SCOPE_VALUE = "osgi";
+    public static final String FUNCTION_VALUE =  "shutdown";
+    public static final String DESCRIPTION = "Shutdown the framework down.";
 
     @Option(name = "-f", aliases = "--force", description = "Force the shutdown without confirmation message.", required = false, multiValued = false)
     boolean force = false;
@@ -40,7 +61,14 @@ public class Shutdown extends OsgiCommandSupport {
             " to wait. The word now is an alias for +0.", required = false, multiValued = false)
     String time;
 
-    protected Object doExecute() throws Exception {
+    private BundleContext bundleContext;
+
+    @Activate
+    void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
+    }
+
+    public Object doExecute() throws Exception {
 
         long sleep = 0;
         if (time != null) {
@@ -83,7 +111,7 @@ public class Shutdown extends OsgiCommandSupport {
 
             System.err.flush();
             for (; ; ) {
-                int c = session.getKeyboard().read();
+                int c = getSession().getKeyboard().read();
                 if (c < 0) {
                     return null;
                 }
@@ -130,4 +158,7 @@ public class Shutdown extends OsgiCommandSupport {
         }.start();
     }
 
+    public BundleContext getBundleContext() {
+        return bundleContext;
+    }
 }

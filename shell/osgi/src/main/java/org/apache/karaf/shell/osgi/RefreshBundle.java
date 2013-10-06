@@ -19,12 +19,29 @@ package org.apache.karaf.shell.osgi;
 import java.util.List;
 
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.PackageAdmin;
 
-@Command(scope = "osgi", name = "refresh", description = "Refresh a bundle.")
+@Command(scope = RefreshBundle.SCOPE_VALUE, name = RefreshBundle.FUNCTION_VALUE, description = RefreshBundle.DESCRIPTION)
+@Component(name = RefreshBundle.ID, description = RefreshBundle.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = RefreshBundle.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = RefreshBundle.FUNCTION_VALUE)
+})
 public class RefreshBundle extends BundlesCommandOptional {
+
+    public static final String ID = "org.apache.karaf.shell.osgi.refresh";
+    public static final String SCOPE_VALUE = "osgi";
+    public static final String FUNCTION_VALUE =  "refresh";
+    public static final String DESCRIPTION = "Refresh a bundle.";
 
     protected void doExecute(List<Bundle> bundles) throws Exception {
         // Get package admin service.

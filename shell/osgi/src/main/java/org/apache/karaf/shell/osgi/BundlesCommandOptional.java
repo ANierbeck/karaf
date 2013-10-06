@@ -16,14 +16,16 @@
  */
 package org.apache.karaf.shell.osgi;
 
-import java.util.List;
-
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Option;
-import org.apache.karaf.shell.console.OsgiCommandSupport;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 
-public abstract class BundlesCommandOptional extends OsgiCommandSupport {
+import java.util.List;
+
+public abstract class BundlesCommandOptional extends ComponentAction {
     
     @Argument(index = 0, name = "ids", description = "The list of bundle (identified by IDs or name or name/version) separated by whitespaces", required = false, multiValued = true)
     List<String> ids;
@@ -31,10 +33,18 @@ public abstract class BundlesCommandOptional extends OsgiCommandSupport {
     @Option(name = "--force", aliases = {}, description = "Forces the command to execute", required = false, multiValued = false)
     boolean force;
 
-    protected Object doExecute() throws Exception {
+    private BundleContext bundleContext;
+
+    @Activate
+    void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
+    }
+
+
+    public Object doExecute() throws Exception {
         List<Bundle> bundles = null;
         if (ids != null && !ids.isEmpty()) {
-            BundleSelector selector = new BundleSelector(getBundleContext(), session);      
+            BundleSelector selector = new BundleSelector(getBundleContext(), getSession());
             bundles = selector.selectBundles(ids, force);
         }
         doExecute(bundles);
@@ -47,4 +57,8 @@ public abstract class BundlesCommandOptional extends OsgiCommandSupport {
      * @throws Exception
      */
     protected abstract void doExecute(List<Bundle> bundles) throws Exception;
+
+    public BundleContext getBundleContext() {
+        return bundleContext;
+    }
 }

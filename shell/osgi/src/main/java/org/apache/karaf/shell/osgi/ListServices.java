@@ -20,12 +20,29 @@ import java.util.List;
 
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.service.command.Function;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceReference;
 
-@Command(scope = "osgi", name = "ls", description = "Lists OSGi services.")
+@Command(scope = ListServices.SCOPE_VALUE, name = ListServices.FUNCTION_VALUE, description = ListServices.DESCRIPTION)
+@Component(name = ListServices.ID, description = ListServices.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ListServices.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ListServices.FUNCTION_VALUE)
+})
 public class ListServices extends BundlesCommandOptional {
+
+    public static final String ID = "org.apache.karaf.shell.osgi.ls";
+    public static final String SCOPE_VALUE = "osgi";
+    public static final String FUNCTION_VALUE =  "ls";
+    public static final String DESCRIPTION = "Gets or sets the start level of a given bundle.";
 
     @Option(name = "-a", aliases = {}, description = "Shows all services", required = false, multiValued = false)
     boolean showAll;

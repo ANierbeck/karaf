@@ -20,6 +20,16 @@
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0">
 
     <bean id="namespaceHandler" class="org.apache.karaf.shell.blueprint.commands.NamespaceHandler" />
+    <bean id="blueprintListener" class="org.apache.karaf.shell.blueprint.BlueprintListener" init-method="init" destroy-method="destroy">
+        <property name="bundleContext" ref="blueprintBundleContext"/>
+    </bean>
+
+    <service ref="blueprintListener">
+        <interfaces>
+            <value>org.osgi.service.blueprint.container.BlueprintListener</value>
+            <value>org.apache.karaf.shell.console.BundleStateListener</value>
+        </interfaces>
+    </service>
 
     <service ref="namespaceHandler" interface="org.apache.aries.blueprint.NamespaceHandler">
         <service-properties>

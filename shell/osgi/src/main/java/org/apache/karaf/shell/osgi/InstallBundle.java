@@ -16,18 +16,37 @@
  */
 package org.apache.karaf.shell.osgi;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
 import org.apache.karaf.shell.console.MultiException;
-import org.apache.karaf.shell.console.OsgiCommandSupport;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 
-@Command(scope = "osgi", name = "install", description = "Installs one or more bundles.")
-public class InstallBundle extends OsgiCommandSupport {
+import java.util.ArrayList;
+import java.util.List;
+
+@Command(scope = InstallBundle.SCOPE_VALUE, name = InstallBundle.FUNCTION_VALUE, description = InstallBundle.DESCRIPTION)
+@Component(name = InstallBundle.ID, description = InstallBundle.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = InstallBundle.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = InstallBundle.FUNCTION_VALUE)
+})
+public class InstallBundle extends ComponentAction {
+
+
+    public static final String ID = "org.apache.karaf.shell.osgi.install";
+    public static final String SCOPE_VALUE = "osgi";
+    public static final String FUNCTION_VALUE =  "install";
+    public static final String DESCRIPTION = "Installs one or more bundles.";
 
     @Argument(index = 0, name = "urls", description = "Bundle URLs separated by whitespaces", required = true, multiValued = true)
     List<String> urls;
@@ -35,12 +54,20 @@ public class InstallBundle extends OsgiCommandSupport {
     @Option(name = "-s", aliases={"--start"}, description="Starts the bundles after installation", required = false, multiValued = false)
     boolean start;
 
-    protected Object doExecute() throws Exception {
+    private BundleContext bundleContext;
+
+    @Activate
+    void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
+    }
+
+
+    public Object doExecute() throws Exception {
         List<Exception> exceptions = new ArrayList<Exception>();
         List<Bundle> bundles = new ArrayList<Bundle>();
         for (String url : urls) {
             try {
-                bundles.add(getBundleContext().installBundle(url, null));
+                bundles.add(bundleContext.installBundle(url, null));
             } catch (Exception e) {
                 exceptions.add(new Exception("Unable to install bundle " + url, e));
             }

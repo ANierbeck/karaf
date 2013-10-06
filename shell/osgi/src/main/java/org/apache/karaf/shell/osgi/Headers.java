@@ -28,19 +28,36 @@ import java.util.Map;
 import jline.Terminal;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.utils.manifest.Attribute;
 import org.apache.felix.utils.manifest.Clause;
 import org.apache.felix.utils.manifest.Directive;
 import org.apache.felix.utils.manifest.Parser;
 import org.apache.felix.utils.version.VersionRange;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.fusesource.jansi.Ansi;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.ExportedPackage;
 import org.osgi.service.packageadmin.PackageAdmin;
 
-@Command(scope = "osgi", name = "headers", description = "Displays OSGi headers of a given bundle.")
+@Command(scope = Headers.SCOPE_VALUE, name = Headers.FUNCTION_VALUE, description = Headers.DESCRIPTION)
+@Component(name = Headers.ID, description = Headers.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = Headers.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = Headers.FUNCTION_VALUE)
+})
 public class Headers extends BundlesCommandOptional {
+
+    public static final String ID = "org.apache.karaf.shell.osgi.headers";
+    public static final String SCOPE_VALUE = "osgi";
+    public static final String FUNCTION_VALUE =  "headers";
+    public static final String DESCRIPTION = "Displays OSGi headers of a given bundle.";
 
     protected final static String BUNDLE_PREFIX = "Bundle-";
     protected final static String PACKAGE_SUFFFIX = "-Package";
@@ -245,7 +262,7 @@ public class Headers extends BundlesCommandOptional {
     }
 
     protected int getTermWidth() {
-        Terminal term = (Terminal) session.get(".jline.terminal");
+        Terminal term = (Terminal) getSession().get(".jline.terminal");
         return term != null ? term.getWidth() : 80;
 
     }

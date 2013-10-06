@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.karaf.shell.osgi;
+package org.apache.karaf.shell.blueprint;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.karaf.shell.console.BundleStateListener;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
@@ -33,7 +34,7 @@ import org.slf4j.Logger;
  *
  */
 public class BlueprintListener implements org.osgi.service.blueprint.container.BlueprintListener, BundleListener,
-                                            BundleStateListener, BundleStateListener.Factory
+        BundleStateListener
 {
 
     public static enum BlueprintState {
@@ -66,10 +67,6 @@ public class BlueprintListener implements org.osgi.service.blueprint.container.B
             return null;
         }
         return state.toString();
-    }
-
-    public BundleStateListener getListener() {
-        return this;
     }
 
     public BlueprintState getBlueprintState(Bundle bundle) {

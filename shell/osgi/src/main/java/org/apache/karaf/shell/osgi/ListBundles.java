@@ -17,18 +17,40 @@
 package org.apache.karaf.shell.osgi;
 
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.apache.karaf.shell.console.OsgiCommandSupport;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.ReferenceCardinality;
+import org.apache.felix.scr.annotations.ReferencePolicy;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.BundleStateListener;
+import org.apache.karaf.shell.console.CompletableFunction;
 import org.apache.felix.gogo.commands.Option;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
-import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.startlevel.StartLevel;
 
-@Command(scope = "osgi", name = "list", description = "Lists all installed bundles.")
-public class ListBundles extends OsgiCommandSupport {
+@Command(scope = ListBundles.SCOPE_VALUE, name = ListBundles.FUNCTION_VALUE, description = ListBundles.DESCRIPTION)
+@Component(name = ListBundles.ID, description = ListBundles.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ListBundles.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ListBundles.FUNCTION_VALUE)
+})
+public class ListBundles extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.osgi.list";
+    public static final String SCOPE_VALUE = "osgi";
+    public static final String FUNCTION_VALUE =  "list";
+    public static final String DESCRIPTION = "Lists all installed bundles.";
 
     @Option(name = "-l", aliases = {}, description = "Show the locations", required = false, multiValued = false)
     boolean showLoc;
@@ -42,31 +64,25 @@ public class ListBundles extends OsgiCommandSupport {
     @Option(name = "-t", valueToShowInHelp = "", description = "Specifies the bundle threshold; bundles with a start-level less than this value will not get printed out.", required = false, multiValued = false)
     int bundleLevelThreshold = -1;
 
-    private List<BundleStateListener.Factory> bundleStateListenerFactories;
+    @Reference(referenceInterface = BundleStateListener.class, cardinality = ReferenceCardinality.OPTIONAL_MULTIPLE, policy = ReferencePolicy.DYNAMIC,
+            bind = "bindBundleStateListener", unbind = "unbindBundleStateListener")
+    private List<BundleStateListener> bundleStateListeners = new CopyOnWriteArrayList<BundleStateListener>();
 
-    public void setBundleStateListenerFactories(List<BundleStateListener.Factory> bundleStateListenerFactories) {
-        this.bundleStateListenerFactories = bundleStateListenerFactories;
+    @Reference
+    private StartLevel startLevel;
+
+    @Reference
+    private PackageAdmin packageAdmin;
+
+    private BundleContext bundleContext;
+
+    @Activate
+    void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
     }
 
-    protected Object doExecute() throws Exception {
-        ServiceReference ref = getBundleContext().getServiceReference(StartLevel.class.getName());
-        StartLevel sl = null;
-        if (ref != null) {
-            sl = (StartLevel) getBundleContext().getService(ref);
-        }
-        if (sl == null) {
-            System.out.println("StartLevel service is unavailable.");
-        }
 
-        ServiceReference pkgref = getBundleContext().getServiceReference(PackageAdmin.class.getName());
-        PackageAdmin admin = null;
-        if (pkgref != null) {
-            admin = (PackageAdmin) getBundleContext().getService(pkgref);
-            if (admin == null) {
-                System.out.println("PackageAdmin service is unavailable.");
-            }
-        }
-
+    public Object doExecute() throws Exception {
         Bundle[] bundles = getBundleContext().getBundles();
         if (bundles != null) {
             // Determine threshold
@@ -82,8 +98,8 @@ public class ListBundles extends OsgiCommandSupport {
                 }
             }
             // Display active start level.
-            if (sl != null) {
-                System.out.println("START LEVEL " + sl.getStartLevel() + 
+            if (startLevel != null) {
+                System.out.println("START LEVEL " + startLevel.getStartLevel() +
                                    " , List Threshold: " + bundleLevelThreshold);
             }
 
@@ -98,10 +114,9 @@ public class ListBundles extends OsgiCommandSupport {
             else if (showUpdate) {
                msg = " Update location";
             }
-            String level = (sl == null) ? "" : "  Level ";
+            String level = (startLevel == null) ? "" : "  Level ";
             String headers = "   ID   State       ";
-            for (BundleStateListener.Factory factory : bundleStateListenerFactories) {
-                BundleStateListener listener = factory.getListener();
+            for (BundleStateListener listener : bundleStateListeners) {
                 if (listener != null) {
                     headers += "  " + listener.getName() + " ";
                 }
@@ -109,7 +124,7 @@ public class ListBundles extends OsgiCommandSupport {
             headers += level + msg;
             System.out.println(headers);
             for (int i = 0; i < bundles.length; i++) {
-            	if (sl.getBundleStartLevel(bundles[i]) >= bundleLevelThreshold) { 
+            	if (startLevel.getBundleStartLevel(bundles[i]) >= bundleLevelThreshold) {
 	                // Get the bundle name or location.
 	                String name = (String) bundles[i].getHeaders().get(Constants.BUNDLE_NAME);
 	                // If there is no name, then default to symbolic name.
@@ -135,11 +150,11 @@ public class ListBundles extends OsgiCommandSupport {
 	                name = (!showLoc && !showUpdate && (version != null)) ? name + " (" + version + ")" : name;
 	                long l = bundles[i].getBundleId();
 	                String id = String.valueOf(l);
-	                if (sl == null) {
+	                if (startLevel == null) {
 	                    level = "1";
 	                }
 	                else {
-	                    level = String.valueOf(sl.getBundleStartLevel(bundles[i]));
+	                    level = String.valueOf(startLevel.getBundleStartLevel(bundles[i]));
 	                }
 	                while (level.length() < 5) {
 	                    level = " " + level;
@@ -148,8 +163,7 @@ public class ListBundles extends OsgiCommandSupport {
 	                    id = " " + id;
 	                }
 	                String line = "[" + id + "] [" + getStateString(bundles[i]) + "]";
-	                for (BundleStateListener.Factory factory : bundleStateListenerFactories) {
-	                    BundleStateListener listener = factory.getListener();
+	                for (BundleStateListener listener : bundleStateListeners) {
 	                    if (listener != null) {
 	                        String state = listener.getState(bundles[i]);
 	                        line += " [" + getStateString(state, listener.getName().length()) + "]";
@@ -158,9 +172,9 @@ public class ListBundles extends OsgiCommandSupport {
 	                line += " [" + level + "] " + name;
 	                System.out.println(line);
 	
-	                if (admin != null) {
-	                    Bundle[] fragments = admin.getFragments(bundles[i]);
-	                    Bundle[] hosts = admin.getHosts(bundles[i]);
+	                if (packageAdmin != null) {
+	                    Bundle[] fragments = packageAdmin.getFragments(bundles[i]);
+	                    Bundle[] hosts = packageAdmin.getHosts(bundles[i]);
 	
 	                    if (fragments != null) {
 	                        System.out.print("                                       Fragments: ");
@@ -196,9 +210,6 @@ public class ListBundles extends OsgiCommandSupport {
             System.out.println("There are no installed bundles.");
         }
 
-        getBundleContext().ungetService(ref);
-        getBundleContext().ungetService(pkgref);
-
         return null;
     }
 
@@ -228,5 +239,18 @@ public class ListBundles extends OsgiCommandSupport {
             state += " ";
         }
         return state;
+    }
+
+    public BundleContext getBundleContext() {
+        return bundleContext;
+    }
+
+    void bindBundleStateListener(BundleStateListener listener) {
+        bundleStateListeners.add(listener);
+    }
+
+    void unbindBundleStateListener(BundleStateListener listener) {
+        bundleStateListeners.remove(listener);
+
     }
 }
