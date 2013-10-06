@@ -22,6 +22,11 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.ReferenceCardinality;
+import org.apache.felix.scr.annotations.ReferencePolicy;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.sshd.agent.SshAgent;
 import org.apache.sshd.agent.SshAgentFactory;
 import org.apache.sshd.agent.SshAgentServer;
@@ -33,9 +38,14 @@ import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.Session;
 import org.apache.sshd.server.session.ServerSession;
 
+@Component(name = "org.apache.karaf.shell.ssh.agent.factory", description ="Karaf SSH Agent Factory", immediate = true)
+@Service(SshAgentFactory.class)
 public class KarafAgentFactory implements SshAgentFactory {
 
     private final Map<String, AgentServerProxy> proxies = new ConcurrentHashMap<String, AgentServerProxy>();
+
+    @Reference(referenceInterface = SshAgent.class, cardinality = ReferenceCardinality.OPTIONAL_MULTIPLE, policy = ReferencePolicy.DYNAMIC,
+            bind = "registerAgent", unbind = "unregisterAgent")
     private final Map<String, SshAgent> locals = new ConcurrentHashMap<String, SshAgent>();
 
     public NamedFactory<Channel> getChannelForwardingFactory() {

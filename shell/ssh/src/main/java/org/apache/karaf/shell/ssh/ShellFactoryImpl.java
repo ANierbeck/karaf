@@ -30,6 +30,9 @@ import java.util.Map;
 import javax.security.auth.Subject;
 
 import jline.Terminal;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.service.command.CommandProcessor;
 import org.apache.felix.service.command.CommandSession;
 import org.apache.felix.service.command.Function;
@@ -45,8 +48,11 @@ import org.osgi.service.blueprint.container.ReifiedType;
 /**
  * SSHD {@link org.apache.sshd.server.Command} factory which provides access to Shell.
  */
+@Component(name = "org.apache.karaf.shell.ssh.shellfactory", description ="Karaf SSH Shell Factory", immediate = true)
+@Service(Factory.class)
 public class ShellFactoryImpl implements Factory<Command> {
 
+    @Reference
     private CommandProcessor commandProcessor;
 
     public void setCommandProcessor(CommandProcessor commandProcessor) {

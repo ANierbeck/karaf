@@ -18,22 +18,41 @@
  */
 package org.apache.karaf.shell.ssh;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.apache.sshd.SshServer;
-import org.apache.karaf.shell.console.BlueprintContainerAware;
-import org.apache.karaf.shell.console.OsgiCommandSupport;
 import org.apache.felix.gogo.commands.Option;
 import org.apache.felix.gogo.commands.Command;
+import org.osgi.service.component.ComponentFactory;
+import org.osgi.service.component.ComponentInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.osgi.service.blueprint.container.BlueprintContainer;
+
+import java.util.Properties;
 
 /**
  * Start a SSH server.
  */
-@Command(scope = "ssh", name = "sshd", description = "Creates a SSH server")
-public class SshServerAction extends OsgiCommandSupport implements BlueprintContainerAware {
+@Command(scope = SshServerAction.SCOPE_VALUE, name = SshServerAction.FUNCTION_VALUE, description = SshServerAction.DESCRIPTION)
+@Component(name = SshServerAction.ID, description = SshServerAction.DESCRIPTION)
+@Service(CompletableFunction.class)
+@org.apache.felix.scr.annotations.Properties({
+        @Property(name = ComponentAction.SCOPE, value = SshServerAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = SshServerAction.FUNCTION_VALUE)
+})
+public class SshServerAction extends ComponentAction {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
+
+    public static final String ID = "org.apache.karaf.shell.ssh.sshd";
+    public static final String SCOPE_VALUE = "ssh";
+    public static final String FUNCTION_VALUE =  "sshd";
+    public static final String DESCRIPTION = "Creates a SSH server";
+
 
     @Option(name = "-p", aliases = { "--port" }, description = "The port to setup the SSH server (Default: 8101)", required = false, multiValued = false)
     private int port = 8101;
@@ -44,21 +63,13 @@ public class SshServerAction extends OsgiCommandSupport implements BlueprintCont
     @Option(name = "-i", aliases = { "--idle-timeout" }, description = "The session idle timeout (Default: 1800000ms)", required = false, multiValued = false)
     private long idleTimeout = 1800000;
 
-    private BlueprintContainer container;
+    @Reference(target = "(component.factory=" + SshServerFactory.ID + ")")
+    private ComponentFactory componentFactory;
 
-    private String sshServerId;
 
-    public void setBlueprintContainer(final BlueprintContainer container) {
-        assert container != null;
-        this.container = container;
-    }
-
-    public void setSshServerId(String sshServerId) {
-        this.sshServerId = sshServerId;
-    }
-
-    protected Object doExecute() throws Exception {
-        SshServer server = (SshServer) container.getComponentInstance(sshServerId);
+    public Object doExecute() throws Exception {
+        ComponentInstance instance = componentFactory.newInstance(new Properties());
+        SshServer server = (SshServer) componentFactory.newInstance(new Properties()).getInstance();
 
         log.debug("Created server: {}", server);
 
@@ -81,6 +92,7 @@ public class SshServerAction extends OsgiCommandSupport implements BlueprintCont
             }
 
             server.stop();
+            instance.dispose();
         }
 
         return null;

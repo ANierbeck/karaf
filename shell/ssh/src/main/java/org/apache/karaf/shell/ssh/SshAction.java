@@ -21,14 +21,19 @@ package org.apache.karaf.shell.ssh;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 
 import jline.Terminal;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
-import org.apache.karaf.shell.console.BlueprintContainerAware;
-import org.apache.karaf.shell.console.OsgiCommandSupport;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.apache.karaf.shell.console.jline.Console;
 import org.apache.sshd.ClientChannel;
 import org.apache.sshd.ClientSession;
@@ -38,16 +43,28 @@ import org.apache.sshd.client.channel.ChannelShell;
 import org.apache.sshd.client.future.ConnectFuture;
 import org.apache.sshd.common.util.NoCloseInputStream;
 import org.apache.sshd.common.util.NoCloseOutputStream;
-import org.osgi.service.blueprint.container.BlueprintContainer;
+import org.osgi.service.component.ComponentFactory;
+import org.osgi.service.component.ComponentInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Connect to a SSH server.
  */
-@Command(scope = "ssh", name = "ssh", description = "Connects to a remote SSH server")
-public class SshAction extends OsgiCommandSupport implements BlueprintContainerAware {
+@Command(scope = SshAction.SCOPE_VALUE, name = SshAction.FUNCTION_VALUE, description = SshAction.DESCRIPTION)
+@Component(name = SshAction.ID, description = SshAction.DESCRIPTION)
+@Service(CompletableFunction.class)
+@org.apache.felix.scr.annotations.Properties({
+        @Property(name = ComponentAction.SCOPE, value = SshAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = SshAction.FUNCTION_VALUE)
+})
+public class SshAction extends ComponentAction {
     private final Logger log = LoggerFactory.getLogger(getClass());
+
+    public static final String ID = "org.apache.karaf.shell.ssh.ssh";
+    public static final String SCOPE_VALUE = "ssh";
+    public static final String FUNCTION_VALUE =  "ssh";
+    public static final String DESCRIPTION = "Connects to a remote SSH server";
 
     @Option(name="-l", aliases={"--username"}, description = "The user name for remote login", required = false, multiValued = false)
     private String username;
@@ -64,22 +81,14 @@ public class SshAction extends OsgiCommandSupport implements BlueprintContainerA
     @Argument(index = 1, name = "command", description = "Optional command to execute", required = false, multiValued = true)
     private List<String> command;
 
-    private BlueprintContainer container;
-
 	private ClientSession sshSession;
-    private String sshClientId;
 
-    public void setBlueprintContainer(final BlueprintContainer container) {
-        assert container != null;
-        this.container = container;
-    }
+    @Reference(target = "(component.factory=" + SshClientFactory.ID + ")")
+    private ComponentFactory componentFactory;
 
-    public void setSshClientId(String sshClientId) {
-        this.sshClientId = sshClientId;
-    }
 
     @Override
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
 
         if (hostname.indexOf('@') >= 0) {
             if (username == null) {
@@ -92,7 +101,7 @@ public class SshAction extends OsgiCommandSupport implements BlueprintContainerA
 
         // If not specified, assume the current user name
         if (username == null) {
-            username = (String) this.session.get("USER");
+            username = (String) getSession().get("USER");
         }
         // If the username was not configured via cli, then prompt the user for the values
         if (username == null) {
@@ -103,13 +112,15 @@ public class SshAction extends OsgiCommandSupport implements BlueprintContainerA
         }
 
         // Create the client from prototype
-        SshClient client = (SshClient) container.getComponentInstance(sshClientId);
+
+        ComponentInstance instance = componentFactory.newInstance(new Properties());
+        SshClient client = (SshClient) componentFactory.newInstance(new Properties()).getInstance();
         log.debug("Created client: {}", client);
         client.start();
 
         String agentSocket = null;
-        if (this.session.get(SshAgent.SSH_AUTHSOCKET_ENV_NAME) != null) {
-            agentSocket = this.session.get(SshAgent.SSH_AUTHSOCKET_ENV_NAME).toString();
+        if (getSession().get(SshAgent.SSH_AUTHSOCKET_ENV_NAME) != null) {
+            agentSocket = getSession().get(SshAgent.SSH_AUTHSOCKET_ENV_NAME).toString();
             client.getProperties().put(SshAgent.SSH_AUTHSOCKET_ENV_NAME,agentSocket);
         }
 
@@ -118,8 +129,8 @@ public class SshAction extends OsgiCommandSupport implements BlueprintContainerA
             future.await();
             sshSession = future.getSession();
 
-            Object oldIgnoreInterrupts = this.session.get(Console.IGNORE_INTERRUPTS);
-            this.session.put( Console.IGNORE_INTERRUPTS, Boolean.TRUE );
+            Object oldIgnoreInterrupts = getSession().get(Console.IGNORE_INTERRUPTS);
+            getSession().put( Console.IGNORE_INTERRUPTS, Boolean.TRUE );
 
             try {
                 System.out.println("Connected");
@@ -171,7 +182,7 @@ public class SshAction extends OsgiCommandSupport implements BlueprintContainerA
                     ((ChannelShell) channel).setPtyColumns(getTermWidth());
                     ((ChannelShell) channel).setupSensibleDefaultPty();
                     ((ChannelShell) channel).setAgentForwarding(true);
-                    Object ctype = session.get("LC_CTYPE");
+                    Object ctype = getSession().get("LC_CTYPE");
                     if (ctype != null) {
                         ((ChannelShell) channel).setEnv("LC_CTYPE", ctype.toString());
                     }
@@ -181,18 +192,19 @@ public class SshAction extends OsgiCommandSupport implements BlueprintContainerA
                 channel.open();
                 channel.waitFor(ClientChannel.CLOSED, 0);
             } finally {
-                session.put(Console.IGNORE_INTERRUPTS, oldIgnoreInterrupts);
+                getSession().put(Console.IGNORE_INTERRUPTS, oldIgnoreInterrupts);
                 sshSession.close(false);
             }
         } finally {
             client.stop();
+            instance.dispose();
         }
 
         return null;
     }
 
     private int getTermWidth() {
-        Terminal term = (Terminal) session.get(".jline.terminal");
+        Terminal term = (Terminal) getSession().get(".jline.terminal");
         return term != null ? term.getWidth() : 80;
     }
 
@@ -201,7 +213,7 @@ public class SshAction extends OsgiCommandSupport implements BlueprintContainerA
         System.err.print(msg);
         System.err.flush();
         for (;;) {
-            int c = super.session.getKeyboard().read();
+            int c = getSession().getKeyboard().read();
             if (c < 0) {
                 return null;
             }

@@ -26,10 +26,14 @@ import javax.security.auth.Subject;
 
 import org.apache.felix.gogo.commands.CommandException;
 import org.apache.felix.gogo.runtime.CommandNotFoundException;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.service.command.CommandProcessor;
 import org.apache.felix.service.command.CommandSession;
 import org.apache.felix.service.command.Converter;
 import org.apache.karaf.shell.console.jline.Console;
+import org.apache.sshd.common.Factory;
 import org.apache.sshd.server.Command;
 import org.apache.sshd.server.CommandFactory;
 import org.apache.sshd.server.Environment;
@@ -40,12 +44,15 @@ import org.fusesource.jansi.Ansi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Component(name = "org.apache.karaf.shell.ssh.shellcommandfactory", description ="Karaf SSH Shell Factory", immediate = true)
+@Service(CommandFactory.class)
 public class ShellCommandFactory implements CommandFactory {
 
     public static final String SHELL_INIT_SCRIPT = "karaf.shell.init.script";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ShellCommandFactory.class);
 
+    @Reference
     private CommandProcessor commandProcessor;
 
     public void setCommandProcessor(CommandProcessor commandProcessor) {
