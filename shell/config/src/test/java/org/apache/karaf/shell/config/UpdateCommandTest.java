@@ -48,14 +48,10 @@ public class UpdateCommandTest extends TestCase {
         command = new UpdateCommand();
 
         context = EasyMock.createMock(BundleContext.class);
-        command.setBundleContext(context);
-
-        ServiceReference reference = createMock(ServiceReference.class);
-        expect(context.getServiceReference(ConfigurationAdmin.class.getName())).andReturn(reference).anyTimes();
-
         admin = createMock(ConfigurationAdmin.class);
-        expect(context.getService(reference)).andReturn(admin);
-        expect(context.ungetService(reference)).andReturn(Boolean.TRUE);
+        command.setBundleContext(context);
+        command.setConfigurationAdmin(admin);
+
 
         replay(context);
 

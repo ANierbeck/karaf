@@ -16,15 +16,32 @@
  */
 package org.apache.karaf.shell.config;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.apache.felix.gogo.commands.Command;
 
-@Command(scope = "config", name = "cancel", description = "Cancels the changes to the configuration being edited.")
+@Command(scope = CancelCommand.SCOPE_VALUE, name = CancelCommand.FUNCTION_VALUE, description = CancelCommand.DESCRIPTION)
+@Component(name = CancelCommand.ID, description = CancelCommand.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = CancelCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = CancelCommand.FUNCTION_VALUE)
+})
 public class CancelCommand extends ConfigCommandSupport {
 
+    public static final String ID = "org.apache.karaf.shell.config.cancel";
+    public static final String SCOPE_VALUE = "config";
+    public static final String FUNCTION_VALUE =  "cancel";
+    public static final String DESCRIPTION = "Cancels the changes to the configuration being edited.";
+
     protected void doExecute(ConfigurationAdmin admin) throws Exception {
-        session.put(PROPERTY_CONFIG_PID, null);
-        session.put(PROPERTY_CONFIG_PROPS, null);
+        getSession().put(PROPERTY_CONFIG_PID, null);
+        getSession().put(PROPERTY_CONFIG_PROPS, null);
     }
 
 }

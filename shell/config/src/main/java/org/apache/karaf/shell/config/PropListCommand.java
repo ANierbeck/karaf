@@ -16,12 +16,39 @@
  */
 package org.apache.karaf.shell.config;
 
+import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.config.completers.ConfigurationCompleter;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.Completer;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Enumeration;
-import org.apache.felix.gogo.commands.Command;
+import java.util.HashMap;
+import java.util.Map;
 
-@Command(scope = "config", name = "proplist", description = "Lists properties from the currently edited configuration.")
+@Command(scope = PropListCommand.SCOPE_VALUE, name = PropListCommand.FUNCTION_VALUE, description = PropListCommand.DESCRIPTION)
+@Component(name = PropListCommand.ID, description = PropListCommand.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = PropListCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = PropListCommand.FUNCTION_VALUE)
+})
 public class PropListCommand extends ConfigPropertyCommandSupport {
+
+    public static final String ID = "org.apache.karaf.shell.config.proplist";
+    public static final String SCOPE_VALUE = "config";
+    public static final String FUNCTION_VALUE =  "proplist";
+    public static final String DESCRIPTION = "Lists properties from the currently edited configuration.";
+
+    @Reference(target = "(completer.type="+ ConfigurationCompleter.COMPLETER_TYPE+")")
+    Completer pidCompleter;
 
     @Override
     public void propertyAction(Dictionary props) {
@@ -39,5 +66,12 @@ public class PropListCommand extends ConfigPropertyCommandSupport {
     @Override
     protected boolean requiresUpdate(String pid) {
         return false;
+    }
+
+    @Override
+    public Map<String, Completer> getOptionalCompleters() {
+        Map<String, Completer> completers = new HashMap<String, Completer>();
+        completers.put("-p", pidCompleter);
+        return Collections.unmodifiableMap(completers);
     }
 }

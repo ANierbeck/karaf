@@ -19,13 +19,30 @@ package org.apache.karaf.shell.config;
 import java.util.Dictionary;
 import java.util.Enumeration;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
 
-@Command(scope = "config", name = "list", description = "Lists existing configurations.")
+@Command(scope = ListCommand.SCOPE_VALUE, name = ListCommand.FUNCTION_VALUE, description = ListCommand.DESCRIPTION)
+@Component(name = ListCommand.ID, description = ListCommand.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ListCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ListCommand.FUNCTION_VALUE)
+})
 public class ListCommand extends ConfigCommandSupport {
+
+    public static final String ID = "org.apache.karaf.shell.config.list";
+    public static final String SCOPE_VALUE = "config";
+    public static final String FUNCTION_VALUE =  "list";
+    public static final String DESCRIPTION = "Lists existing configurations.";
 
     @Argument(index = 0, name = "query", description = "Query in LDAP syntax. Example: \"(service.pid=org.apache.karaf.log)\"", required = false, multiValued = false)
     String query;

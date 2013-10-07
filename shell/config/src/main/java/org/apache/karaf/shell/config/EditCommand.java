@@ -16,17 +16,38 @@
  */
 package org.apache.karaf.shell.config;
 
+import java.util.Arrays;
 import java.util.Dictionary;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.config.completers.ConfigurationCompleter;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.Completer;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 
-@Command(scope = "config", name = "edit", description = "Creates or edits a configuration.", detailedDescription="classpath:edit.txt")
+@Command(scope = EditCommand.SCOPE_VALUE, name = EditCommand.FUNCTION_VALUE, description = EditCommand.DESCRIPTION, detailedDescription="classpath:edit.txt")
+@Component(name = EditCommand.ID, description = EditCommand.DESCRIPTION)
+@Service(CompletableFunction.class)
+@org.apache.felix.scr.annotations.Properties({
+        @Property(name = ComponentAction.SCOPE, value = EditCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = EditCommand.FUNCTION_VALUE)
+})
 public class EditCommand extends ConfigCommandSupport {
+
+    public static final String ID = "org.apache.karaf.shell.config.edit";
+    public static final String SCOPE_VALUE = "config";
+    public static final String FUNCTION_VALUE =  "edit";
+    public static final String DESCRIPTION = "Creates or edits a configuration.";
 
     @Argument(index = 0, name = "pid", description = "PID of the configuration", required = true, multiValued = false)
     String pid;
@@ -37,8 +58,11 @@ public class EditCommand extends ConfigCommandSupport {
 	@Option(name = "-f", aliases = {"--use-file"}, description = "Configuration lookup using the filename instead of the pid", required = false, multiValued = false)
     boolean useFile;
 
+    @Reference(target = "(completer.type="+ ConfigurationCompleter.COMPLETER_TYPE+")")
+    Completer pidCompleter;
+
     protected void doExecute(ConfigurationAdmin admin) throws Exception {
-        String oldPid = (String) this.session.get(PROPERTY_CONFIG_PID);
+        String oldPid = (String) getSession().get(PROPERTY_CONFIG_PID);
         if (oldPid != null && !oldPid.equals(pid) && !force) {
             System.err.println("Another config is being edited.  Cancel / update first, or use the --force option");
             return;
@@ -61,8 +85,12 @@ public class EditCommand extends ConfigCommandSupport {
                 props = new Properties();
             }
         }
-        this.session.put(PROPERTY_CONFIG_PID, pid);
-        this.session.put(PROPERTY_CONFIG_PROPS, props);
+        getSession().put(PROPERTY_CONFIG_PID, pid);
+        getSession().put(PROPERTY_CONFIG_PROPS, props);
     }
 
+    @Override
+    public List<Completer> getCompleters() {
+        return Arrays.asList(pidCompleter);
+    }
 }

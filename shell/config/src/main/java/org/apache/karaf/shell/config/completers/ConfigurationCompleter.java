@@ -23,6 +23,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.shell.console.completer.StringsCompleter;
 import org.apache.karaf.shell.console.Completer;
 import org.osgi.service.cm.Configuration;
@@ -36,16 +42,25 @@ import org.osgi.service.cm.ConfigurationListener;
  * Displays a list of existing config admin configurations for completion.
  *
  */
+@Component(name = "org.apache.karaf.shell.config.completer", immediate = true)
+@Service({Completer.class, ConfigurationListener.class})
+@Properties(
+        @Property(name = "completer.type", value = ConfigurationCompleter.COMPLETER_TYPE)
+)
 public class ConfigurationCompleter implements Completer, ConfigurationListener {
+
+    public static final String COMPLETER_TYPE = "pid";
 
     private final StringsCompleter delegate = new StringsCompleter();
 
+    @Reference
     private ConfigurationAdmin admin;
 
     public void setAdmin(ConfigurationAdmin admin) {
         this.admin = admin;
     }
 
+    @Activate
     public void init() {
         Configuration[] configs;
         try {

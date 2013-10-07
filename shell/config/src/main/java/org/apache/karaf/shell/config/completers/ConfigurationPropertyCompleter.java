@@ -26,6 +26,13 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.service.command.CommandSession;
 import org.apache.karaf.shell.config.ConfigCommandSupport;
 import org.apache.karaf.shell.console.Completer;
@@ -42,13 +49,20 @@ import org.osgi.service.cm.ConfigurationAdmin;
  * Displays a list of existing properties based on the current configuration being edited.
  *
  */
+@Component(name = "org.apache.karaf.shell.config.completer.keys", immediate = true)
+@Service(Completer.class)
+@Properties(
+        @Property(name = "completer.type", value = ConfigurationPropertyCompleter.COMPLETER_TYPE)
+)
 public class ConfigurationPropertyCompleter implements Completer {
 
+    public static final String COMPLETER_TYPE = "config.keys";
     private final StringsCompleter delegate = new StringsCompleter();
 
     private static final String OPTION = "-p";
     private static final String ALIAS = "--pid";
 
+    @Reference
     private ConfigurationAdmin configAdmin;
 
     public int complete(final String buffer, final int cursor, final List candidates) {
