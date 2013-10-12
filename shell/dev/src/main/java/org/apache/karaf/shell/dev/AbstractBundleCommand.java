@@ -48,17 +48,6 @@ public abstract class AbstractBundleCommand extends ComponentAction {
     @Reference
     private PackageAdmin admin;
 
-    private BundleContext bundleContext;
-
-    @Activate
-    void activate(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
-
-    @Deactivate
-    void deactivate(){
-    }
-
     @Override
     public Object doExecute() throws Exception {
         Bundle bundle = getBundleContext().getBundle(id);
@@ -98,9 +87,5 @@ public abstract class AbstractBundleCommand extends ComponentAction {
 
     protected PackageAdmin getPackageAdmin() {
         return admin;    
-    }
-
-    protected BundleContext getBundleContext() {
-        return bundleContext;
     }
 }

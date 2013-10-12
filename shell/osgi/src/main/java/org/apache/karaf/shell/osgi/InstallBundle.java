@@ -54,20 +54,13 @@ public class InstallBundle extends ComponentAction {
     @Option(name = "-s", aliases={"--start"}, description="Starts the bundles after installation", required = false, multiValued = false)
     boolean start;
 
-    private BundleContext bundleContext;
-
-    @Activate
-    void activate(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
-
 
     public Object doExecute() throws Exception {
         List<Exception> exceptions = new ArrayList<Exception>();
         List<Bundle> bundles = new ArrayList<Bundle>();
         for (String url : urls) {
             try {
-                bundles.add(bundleContext.installBundle(url, null));
+                bundles.add(getBundleContext().installBundle(url, null));
             } catch (Exception e) {
                 exceptions.add(new Exception("Unable to install bundle " + url, e));
             }

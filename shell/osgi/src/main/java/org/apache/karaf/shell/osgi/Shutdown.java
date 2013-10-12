@@ -61,13 +61,6 @@ public class Shutdown extends ComponentAction {
             " to wait. The word now is an alias for +0.", required = false, multiValued = false)
     String time;
 
-    private BundleContext bundleContext;
-
-    @Activate
-    void activate(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
-
     public Object doExecute() throws Exception {
 
         long sleep = 0;
@@ -156,9 +149,5 @@ public class Shutdown extends ComponentAction {
                 }
             }
         }.start();
-    }
-
-    public BundleContext getBundleContext() {
-        return bundleContext;
     }
 }

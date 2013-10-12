@@ -20,10 +20,13 @@ package org.apache.karaf.shell.console.commands;
 
 import org.apache.felix.gogo.commands.Action;
 import org.apache.felix.gogo.commands.basic.AbstractCommand;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.service.command.CommandSession;
 import org.apache.karaf.shell.console.CompletableFunction;
 import org.apache.karaf.shell.console.Completer;
 import org.apache.karaf.shell.console.completer.NullCompleter;
+import org.osgi.framework.BundleContext;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,16 +35,25 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+
+@Component(name = "org.apache.karaf.shell.console.action.base", componentAbstract = true)
 public abstract class ComponentAction extends AbstractCommand implements Action, CompletableFunction {
 
     public static final String SCOPE = "osgi.command.scope";
     public static final String FUNCTION = "osgi.command.function";
 
-    private static final NullCompleter NULL_COMPLETER = new NullCompleter();
+    static final NullCompleter NULL_COMPLETER = new NullCompleter();
 
     private final List<Completer> completers = new CopyOnWriteArrayList<Completer>();
     private final ConcurrentMap<String, Completer> optionalCompleters = new ConcurrentHashMap<String, Completer>();
     private CommandSession session;
+
+    private BundleContext bundleContext;
+
+    @Activate
+   public void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
+    }
 
     public abstract Object doExecute() throws Exception;
 
@@ -81,5 +93,9 @@ public abstract class ComponentAction extends AbstractCommand implements Action,
 
     public Map<String, Completer> getOptionalCompleters() {
         return optionalCompleters;
+    }
+
+    public BundleContext getBundleContext() {
+        return bundleContext;
     }
 }

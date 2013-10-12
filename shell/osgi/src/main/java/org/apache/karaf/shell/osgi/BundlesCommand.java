@@ -33,14 +33,6 @@ public abstract class BundlesCommand extends ComponentAction {
     @Option(name = "--force", aliases = {}, description = "Forces the command to execute", required = false, multiValued = false)
     boolean force;
 
-    private BundleContext bundleContext;
-
-    @Activate
-    void activate(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
-
-
     public Object doExecute() throws Exception {
         BundleSelector selector = new BundleSelector(getBundleContext(), getSession());
         List<Bundle> bundles = selector.selectBundles(ids, force);
@@ -49,8 +41,4 @@ public abstract class BundlesCommand extends ComponentAction {
     }
       
     protected abstract void doExecute(List<Bundle> bundles) throws Exception;
-
-    public BundleContext getBundleContext() {
-        return bundleContext;
-    }
 }

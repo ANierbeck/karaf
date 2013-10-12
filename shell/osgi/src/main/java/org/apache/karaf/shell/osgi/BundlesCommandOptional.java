@@ -33,14 +33,6 @@ public abstract class BundlesCommandOptional extends ComponentAction {
     @Option(name = "--force", aliases = {}, description = "Forces the command to execute", required = false, multiValued = false)
     boolean force;
 
-    private BundleContext bundleContext;
-
-    @Activate
-    void activate(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
-
-
     public Object doExecute() throws Exception {
         List<Bundle> bundles = null;
         if (ids != null && !ids.isEmpty()) {
@@ -57,8 +49,4 @@ public abstract class BundlesCommandOptional extends ComponentAction {
      * @throws Exception
      */
     protected abstract void doExecute(List<Bundle> bundles) throws Exception;
-
-    public BundleContext getBundleContext() {
-        return bundleContext;
-    }
 }

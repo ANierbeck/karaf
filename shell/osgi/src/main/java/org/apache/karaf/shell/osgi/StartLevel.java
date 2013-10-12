@@ -45,13 +45,6 @@ public class StartLevel extends ComponentAction {
     @Argument(index = 0, name = "level", description = "The new system start level to set", required = false, multiValued = false)
     Integer level;
 
-    private BundleContext bundleContext;
-
-    @Activate
-    void activate(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
-
     public Object doExecute() throws Exception {
         // Get package admin service.
         ServiceReference ref = getBundleContext().getServiceReference(org.osgi.service.startlevel.StartLevel.class.getName());
@@ -77,9 +70,5 @@ public class StartLevel extends ComponentAction {
             getBundleContext().ungetService(ref);
         }
         return null;
-    }
-
-    public BundleContext getBundleContext() {
-        return bundleContext;
     }
 }

@@ -64,17 +64,6 @@ public class FrameworkOptions extends ComponentAction {
     @Argument(name = "framework", required = false, description = "Name of the OSGi framework to use")
     String framework;
 
-    private BundleContext bundleContext;
-
-    @Activate
-    void activate(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
-
-    void deactivate() {
-
-    }
-
     @Override
     public Object doExecute() throws Exception {
 
@@ -114,7 +103,7 @@ public class FrameworkOptions extends ComponentAction {
 
 
     public Framework getFramework() {
-        if (bundleContext.getBundle(0).getSymbolicName().contains("felix")) {
+        if (getBundleContext().getBundle(0).getSymbolicName().contains("felix")) {
             return new Felix(new File(KARAF_BASE));
         } else {
             return new Equinox(new File(KARAF_BASE));

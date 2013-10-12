@@ -53,19 +53,12 @@ public class WebListCommand extends ComponentAction {
     @Reference
 	private WebEventHandler eventHandler;
 
-    private BundleContext bundleContext;
-
-    @Activate
-    void activate(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
-
 	/* (non-Javadoc)
 	 * @see org.apache.karaf.shell.war.WarCommandSupport#doExecute(org.osgi.service.packageadmin.PackageAdmin)
 	 */
 	@Override
 	public Object doExecute() {
-		Bundle[] bundles = bundleContext.getBundles();
+		Bundle[] bundles = getBundleContext().getBundles();
 		Map<Long, WebEvent> bundleEvents = eventHandler.getBundleEvents();
 		if (bundles != null) {
 			String level = (startLevelService == null) ? "" : "  Level ";

@@ -63,13 +63,6 @@ public class WaitForService extends ComponentAction {
     @Argument(name = "service", description="The service class or filter", required = true, multiValued = false)
     String service;
 
-    private BundleContext bundleContext;
-
-    @Activate
-    void activate(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
-
     @Override
     public Object doExecute() throws Exception {
         ServiceTracker tracker = null;
@@ -82,7 +75,7 @@ public class WaitForService extends ComponentAction {
                 filter = "(" + filter + ")";
             }
             Filter osgiFilter = FrameworkUtil.createFilter(filter);
-            tracker = new ServiceTracker(bundleContext, osgiFilter, null);
+            tracker = new ServiceTracker(getBundleContext(), osgiFilter, null);
             tracker.open(true);
             Object svc = tracker.getService();
             if (timeout >= 0) {

@@ -48,20 +48,13 @@ public class FindClass extends ComponentAction {
     @Argument(index = 0, name = "className", description = "Class name or partial class name to be found", required = true, multiValued = false)
     String className;
 
-    private BundleContext bundleContext;
-
-    @Activate
-    void activate(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
-
     public Object doExecute() throws Exception {
         findResource();
         return null;
     }
 
     protected void findResource() {
-        Bundle[] bundles = bundleContext.getBundles();
+        Bundle[] bundles = getBundleContext().getBundles();
         String filter = "*" + className + "*";
         for (Bundle bundle : bundles) {
             BundleWiring wiring = (BundleWiring) bundle.adapt(BundleWiring.class);
@@ -78,5 +71,4 @@ public class FindClass extends ComponentAction {
             }
         }
     }
-
 }

@@ -48,20 +48,12 @@ public class Name extends ComponentAction {
     @Argument(name = "name", index = 0, description = "New name of the Karaf instance.", required = false, multiValued = false)
     String name;
 
-    private BundleContext bundleContext;
-
-    @Activate
-    void activate(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
-
-
     public Object doExecute() throws Exception {
         if (name == null) {
-            System.out.println(bundleContext.getProperty("karaf.name"));
+            System.out.println(getBundleContext().getProperty("karaf.name"));
         } else {
             try {
-                String karafBase = bundleContext.getProperty("karaf.base");
+                String karafBase = getBundleContext().getProperty("karaf.base");
                 File etcDir = new File(karafBase, "etc");
                 File syspropsFile = new File(etcDir, "system.properties");
                 FileInputStream fis = new FileInputStream(syspropsFile);

@@ -29,12 +29,17 @@ import org.apache.felix.gogo.commands.basic.AbstractCommand;
 import org.apache.felix.gogo.runtime.Closure;
 import org.apache.felix.gogo.runtime.CommandProxy;
 import org.apache.felix.gogo.runtime.CommandSessionImpl;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.service.command.CommandSession;
 import org.apache.felix.service.command.Function;
 import org.apache.karaf.shell.console.Completer;
 import org.apache.karaf.shell.console.jline.CommandSessionHolder;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.osgi.service.cm.ConfigurationListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +47,14 @@ import org.slf4j.LoggerFactory;
  * Like the {@link org.apache.karaf.shell.console.completer.CommandsCompleter} but does not use OSGi but is
  * instead used from the non-OSGi {@link org.apache.karaf.shell.console.Main}
  */
+@Component(name = "org.apache.karaf.shell.console.commands.completer", immediate = true)
+@Service(Completer.class)
+@Properties(
+        @Property(name = "completer.type", value = CommandsCompleter.COMPLETER_TYPE)
+)
 public class CommandsCompleter implements Completer {
+
+    public static final String COMPLETER_TYPE = "commands.completer";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommandsCompleter.class);
 

@@ -50,18 +50,12 @@ public class Restart  extends ComponentAction {
     @Option(name = "-c", aliases = { "--clean" }, description = "Force a clean restart by deleting the working directory")
     private boolean clean;
 
-    private BundleContext bundleContext;
-
-    @Activate
-    void activate(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
 
     @Override
     public Object doExecute() throws Exception {
         System.setProperty("karaf.restart", "true");
         System.setProperty("karaf.restart.clean", Boolean.toString(clean));
-        bundleContext.getBundle(0).stop();
+        getBundleContext().getBundle(0).stop();
         return null;
     }
 }

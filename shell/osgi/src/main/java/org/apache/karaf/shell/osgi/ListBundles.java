@@ -74,19 +74,12 @@ public class ListBundles extends ComponentAction {
     @Reference
     private PackageAdmin packageAdmin;
 
-    private BundleContext bundleContext;
-
-    @Activate
-    void activate(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
-
 
     public Object doExecute() throws Exception {
         Bundle[] bundles = getBundleContext().getBundles();
         if (bundles != null) {
             // Determine threshold
-            final String sbslProp = bundleContext.getProperty("karaf.systemBundlesStartLevel");
+            final String sbslProp = getBundleContext().getProperty("karaf.systemBundlesStartLevel");
             if (sbslProp != null) {
                 try {
                    if (bundleLevelThreshold < 0) {
@@ -239,10 +232,6 @@ public class ListBundles extends ComponentAction {
             state += " ";
         }
         return state;
-    }
-
-    public BundleContext getBundleContext() {
-        return bundleContext;
     }
 
     void bindBundleStateListener(BundleStateListener listener) {

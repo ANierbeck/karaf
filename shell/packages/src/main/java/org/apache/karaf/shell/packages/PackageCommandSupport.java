@@ -37,21 +37,10 @@ public abstract class PackageCommandSupport extends ComponentAction {
     @Reference
     private PackageAdmin packageAdmin;
 
-    private BundleContext bundleContext;
-
-    @Activate
-    void activate(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
-
     public Object doExecute() throws Exception {
         doExecute(packageAdmin);
         return null;
     }
 
     protected abstract void doExecute(PackageAdmin admin) throws Exception;
-
-    public BundleContext getBundleContext() {
-        return bundleContext;
-    }
 }
