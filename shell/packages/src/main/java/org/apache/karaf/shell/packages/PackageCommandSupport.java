@@ -16,11 +16,9 @@
  */
 package org.apache.karaf.shell.packages;
 
-import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.karaf.shell.console.commands.ComponentAction;
-import org.osgi.framework.BundleContext;
 import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
