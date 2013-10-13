@@ -100,7 +100,6 @@
                         <Private-Package>
                             org.apache.karaf.management.mbeans.scr.internal
                         </Private-Package>
-                        <Service-Component>*</Service-Component>
                     </instructions>
                 </configuration>
             </plugin>
