@@ -43,7 +43,6 @@ import org.apache.sshd.server.Environment;
 import org.apache.sshd.server.ExitCallback;
 import org.apache.sshd.server.SessionAware;
 import org.apache.sshd.server.session.ServerSession;
-import org.osgi.service.blueprint.container.ReifiedType;
 
 /**
  * SSHD {@link org.apache.sshd.server.Command} factory which provides access to Shell.
@@ -186,6 +185,7 @@ public class ShellFactoryImpl implements Factory<Command> {
         }
     }
 
+    /*
     public static Converter getConverter() {
         return new Converter();
     }
@@ -202,6 +202,7 @@ public class ShellFactoryImpl implements Factory<Command> {
             return sourceObject;
         }
     }
+    */
 
     // TODO: remove this class when sshd use lf->crlf conversion by default
     public class LfToCrLfFilterOutputStream extends FilterOutputStream {

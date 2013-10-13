@@ -22,11 +22,6 @@ import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.server.UserAuth;
 import org.apache.sshd.server.auth.UserAuthPassword;
 import org.apache.sshd.server.auth.UserAuthPublicKey;
-import org.osgi.service.blueprint.container.ComponentDefinitionException;
-import org.osgi.service.blueprint.container.Converter;
-import org.osgi.service.blueprint.container.ReifiedType;
-
-import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -54,9 +49,11 @@ public class UserAuthFactoriesFactory {
     private Set<String> methodSet;
     private List<NamedFactory<UserAuth>> factories;
 
+    /*
     public static Converter getConverter() {
         return new Converter();
     }
+    */
 
     /**
      * This blueprint type converter silently converts instances of
@@ -65,7 +62,7 @@ public class UserAuthFactoriesFactory {
      * and therefore helps blueprint to set the returned factories on
      * {@link SshServerAction#setUserAuthFactories(List)} without complaining
      * about type conversion errors.
-     */
+     *
     public static class Converter implements org.osgi.service.blueprint.container.Converter {
 
         public boolean canConvert(Object sourceObject, ReifiedType targetType) {
@@ -80,6 +77,7 @@ public class UserAuthFactoriesFactory {
         }
 
     }
+    */
 
     public void setAuthMethods(String methods) {
         this.methodSet = new HashSet<String>();
@@ -91,7 +89,7 @@ public class UserAuthFactoriesFactory {
             } else if (PUBLICKEY_METHOD.equals(am)) {
                 this.factories.add(new UserAuthPublicKey.Factory());
             } else {
-                throw new ComponentDefinitionException("Invalid authentication method " + am + " specified");
+                throw new RuntimeException("Invalid authentication method " + am + " specified");
             }
             this.methodSet.add(am);
         }
