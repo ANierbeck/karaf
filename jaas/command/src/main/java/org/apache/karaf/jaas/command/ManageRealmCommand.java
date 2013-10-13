@@ -17,17 +17,39 @@ package org.apache.karaf.jaas.command;
 
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.jaas.boot.ProxyLoginModule;
+import org.apache.karaf.jaas.command.completers.LoginModuleNameCompleter;
+import org.apache.karaf.jaas.command.completers.RealmCompleter;
 import org.apache.karaf.jaas.config.JaasRealm;
 import org.apache.karaf.jaas.modules.BackingEngine;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.Completer;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
 import javax.security.auth.login.AppConfigurationEntry;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
-@Command(scope = "jaas", name = "manage", description = "Manage users and roles of a JAAS Realm")
+@Command(scope = ManageRealmCommand.SCOPE_VALUE, name = ManageRealmCommand.FUNCTION_VALUE, description = ManageRealmCommand.DESCRIPTION)
+@Component(name = ManageRealmCommand.ID, description = ManageRealmCommand.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ManageRealmCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ManageRealmCommand.FUNCTION_VALUE)
+})
 public class ManageRealmCommand extends JaasCommandSupport {
+
+    public static final String ID = "org.apache.karaf.jaas.command.manage";
+    public static final String SCOPE_VALUE = "jaas";
+    public static final String FUNCTION_VALUE =  "manage";
+    public static final String DESCRIPTION = "Manage users and roles of a JAAS Realm.";
 
     @Option(name = "--realm", description = "Realm Name", required = false, multiValued = false)
     String realmName;
@@ -41,14 +63,19 @@ public class ManageRealmCommand extends JaasCommandSupport {
     @Option(name = "-f", aliases = {"--force"}, description = "Force the management of this realm, even if another one was under management", required = false, multiValued = false)
     boolean force;
 
+    @Reference(target = "(completer.type="+RealmCompleter.COMPLETER_TYPE+")", bind = "bindRealmCompleter", unbind = "unbindRealmCompleter")
+    private Completer realmCompleter;
+    @Reference(target = "(completer.type="+LoginModuleNameCompleter.COMPLETER_TYPE+")",bind = "bindLoginModuleNameCompleter", unbind = "unbindLoginModuleNameCompleter")
+    private Completer loginModuleNameCompleter;
+
     @Override
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         if (realmName == null && index <= 0) {
             System.err.println("A valid realm or the realm index need to be specified");
             return null;
         }
-        JaasRealm oldRealm = (JaasRealm) this.session.get(JAAS_REALM);
-        AppConfigurationEntry oldEntry = (AppConfigurationEntry) this.session.get(JAAS_ENTRY);
+        JaasRealm oldRealm = (JaasRealm) getSession().get(JAAS_REALM);
+        AppConfigurationEntry oldEntry = (AppConfigurationEntry) getSession().get(JAAS_ENTRY);
 
         if (oldRealm != null && !oldRealm.getName().equals(realmName) && !force) {
             System.err.println("Another JAAS Realm is being edited. Cancel/update first, or use the --force option.");
@@ -119,14 +146,14 @@ public class ManageRealmCommand extends JaasCommandSupport {
 
             Queue<JaasCommandSupport> commands = null;
 
-            commands = (Queue<JaasCommandSupport>) this.session.get(JAAS_CMDS);
+            commands = (Queue<JaasCommandSupport>) getSession().get(JAAS_CMDS);
             if (commands == null) {
                 commands = new LinkedList<JaasCommandSupport>();
             }
 
-            this.session.put(JAAS_REALM, realm);
-            this.session.put(JAAS_ENTRY, entry);
-            this.session.put(JAAS_CMDS, commands);
+            getSession().put(JAAS_REALM, realm);
+            getSession().put(JAAS_ENTRY, entry);
+            getSession().put(JAAS_CMDS, commands);
         }
         return null;
     }
@@ -135,4 +162,26 @@ public class ManageRealmCommand extends JaasCommandSupport {
     protected Object doExecute(BackingEngine engine) throws Exception {
         return null;
     }
+
+
+    void bindRealmCompleter(Completer completer) {
+        this.realmCompleter = completer;
+        getOptionalCompleters().put("--realm", realmCompleter);
+    }
+
+    void unbindRealmCompleter(Completer completer) {
+        this.realmCompleter = null;
+        getOptionalCompleters().remove("--realm");
+    }
+
+    void bindLoginModuleNameCompleter(Completer completer) {
+        this.loginModuleNameCompleter = completer;
+        getOptionalCompleters().put("--module", completer);
+    }
+
+    void unbindLoginModuleNameCompleter(Completer completer) {
+        this.loginModuleNameCompleter = null;
+        getOptionalCompleters().remove("--module");
+    }
+
 }

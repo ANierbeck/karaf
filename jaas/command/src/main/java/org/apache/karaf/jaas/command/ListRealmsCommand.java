@@ -19,12 +19,29 @@ import java.util.List;
 import javax.security.auth.login.AppConfigurationEntry;
 
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.jaas.boot.ProxyLoginModule;
 import org.apache.karaf.jaas.config.JaasRealm;
 import org.apache.karaf.jaas.modules.BackingEngine;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "jaas", name = "realms", description = "List JAAS Realms")
+@Command(scope = ListRealmsCommand.SCOPE_VALUE, name = ListRealmsCommand.FUNCTION_VALUE, description = ListRealmsCommand.DESCRIPTION)
+@Component(name = ListRealmsCommand.ID, description = ListRealmsCommand.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ListRealmsCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ListRealmsCommand.FUNCTION_VALUE)
+})
 public class ListRealmsCommand extends JaasCommandSupport {
+
+    public static final String ID = "org.apache.karaf.jaas.command.realms";
+    public static final String SCOPE_VALUE = "jaas";
+    public static final String FUNCTION_VALUE =  "realms";
+    public static final String DESCRIPTION = "List JAAS Realms.";
 
     private static final String REALM_LIST_FORMAT = "%5s %-20s %-80s";
 
@@ -33,7 +50,7 @@ public class ListRealmsCommand extends JaasCommandSupport {
         return null;
     }
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         List<JaasRealm> realms = getRealms();
         if (realms != null && realms.size() > 0) {
             System.out.println(String.format(REALM_LIST_FORMAT, "Index","Realm", "ModuleImpl Class"));

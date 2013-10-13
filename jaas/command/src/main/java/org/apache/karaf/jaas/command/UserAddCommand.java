@@ -17,10 +17,27 @@ package org.apache.karaf.jaas.command;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.jaas.modules.BackingEngine;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "jaas", name = "useradd", description = "Add a user")
+@Command(scope = UserAddCommand.SCOPE_VALUE, name = UserAddCommand.FUNCTION_VALUE, description = UserAddCommand.DESCRIPTION)
+@Component(name = UserAddCommand.ID, description = UserAddCommand.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = UserAddCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = UserAddCommand.FUNCTION_VALUE)
+})
 public class UserAddCommand extends JaasCommandSupport {
+
+    public static final String ID = "org.apache.karaf.jaas.command.useradd";
+    public static final String SCOPE_VALUE = "jaas";
+    public static final String FUNCTION_VALUE =  "useradd";
+    public static final String DESCRIPTION = "Add a user";
 
     @Argument(index = 0, name = "username", description = "User Name", required = true, multiValued = false)
     private String username;

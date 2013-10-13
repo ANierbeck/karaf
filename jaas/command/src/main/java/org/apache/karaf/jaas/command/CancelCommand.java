@@ -16,19 +16,37 @@
 package org.apache.karaf.jaas.command;
 
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.jaas.modules.BackingEngine;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
 import java.util.LinkedList;
 
-@Command(scope = "jaas", name = "cancel", description = "Cancel the modification on a JAAS Realm")
+@Command(scope = CancelCommand.SCOPE_VALUE, name = CancelCommand.FUNCTION_VALUE, description = CancelCommand.DESCRIPTION)
+@Component(name = CancelCommand.ID, description = CancelCommand.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = CancelCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = CancelCommand.FUNCTION_VALUE)
+})
 public class CancelCommand extends JaasCommandSupport {
 
+    public static final String ID = "org.apache.karaf.jaas.command.cancel";
+    public static final String SCOPE_VALUE = "jaas";
+    public static final String FUNCTION_VALUE =  "cancel";
+    public static final String DESCRIPTION = "Cancel the modification on a JAAS Realm.";
+
+
     @Override
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         //Cleanup the session
-        session.put(JAAS_REALM, null);
-        session.put(JAAS_ENTRY, null);
-        session.put(JAAS_CMDS, new LinkedList<JaasCommandSupport>());
+        getSession().put(JAAS_REALM, null);
+        getSession().put(JAAS_ENTRY, null);
+        getSession().put(JAAS_CMDS, new LinkedList<JaasCommandSupport>());
         return null;
     }
 

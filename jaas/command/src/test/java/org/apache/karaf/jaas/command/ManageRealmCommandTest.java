@@ -23,14 +23,12 @@ import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 
 import org.apache.felix.service.command.CommandSession;
-import org.apache.karaf.jaas.config.JaasRealm;
 import org.apache.karaf.jaas.config.impl.ConfigImpl;
 import org.apache.karaf.jaas.config.impl.ModuleImpl;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
-import java.util.Arrays;
 import java.util.Properties;
 
 public class ManageRealmCommandTest {
@@ -64,7 +62,9 @@ public class ManageRealmCommandTest {
     private void doVerifyIndex(ManageRealmCommand cmd, int index, ConfigImpl[] realms) throws Exception {
         // prepare command
         cmd.index = index;
-        cmd.setRealms(Arrays.<JaasRealm> asList(realms));
+        for(ConfigImpl realm : realms) {
+            cmd.bindRealm(realm);
+        }
 
         // prepare mocks
         CommandSession session = createMock(CommandSession.class);

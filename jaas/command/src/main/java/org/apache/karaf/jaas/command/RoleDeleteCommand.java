@@ -17,10 +17,27 @@ package org.apache.karaf.jaas.command;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.jaas.modules.BackingEngine;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "jaas", name = "roledel", description = "Delete a role from a user")
+@Command(scope = RoleDeleteCommand.SCOPE_VALUE, name = RoleDeleteCommand.FUNCTION_VALUE, description = RoleDeleteCommand.DESCRIPTION)
+@Component(name = RoleDeleteCommand.ID, description = RoleDeleteCommand.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = RoleDeleteCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = RoleDeleteCommand.FUNCTION_VALUE)
+})
 public class RoleDeleteCommand extends JaasCommandSupport {
+
+    public static final String ID = "org.apache.karaf.jaas.command.roledel";
+    public static final String SCOPE_VALUE = "jaas";
+    public static final String FUNCTION_VALUE =  "roledel";
+    public static final String DESCRIPTION = "Delete a role from a user.";
 
     @Argument(index = 0, name = "username", description = "User Name", required = true, multiValued = false)
     private String username;

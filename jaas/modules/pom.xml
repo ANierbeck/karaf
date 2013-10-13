@@ -73,18 +73,6 @@
             <artifactId>org.osgi.compendium</artifactId>
             <scope>provided</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.springframework.osgi</groupId>
-            <artifactId>spring-osgi-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.aries.blueprint</groupId>
-            <artifactId>org.apache.aries.blueprint.core</artifactId>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
 
     <build>
@@ -112,7 +100,6 @@
                         <Import-Package>
                             javax.net,
                             org.apache.karaf.jaas.config,
-                            org.apache.aries.blueprint.ext,
                             *
                         </Import-Package>
                         <Private-Package>

@@ -16,17 +16,37 @@
  */
 package org.apache.karaf.jaas.command.completers;
 
-import java.util.LinkedList;
-import java.util.List;
-import javax.security.auth.login.AppConfigurationEntry;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.ReferenceCardinality;
+import org.apache.felix.scr.annotations.ReferencePolicy;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.jaas.boot.ProxyLoginModule;
 import org.apache.karaf.jaas.config.JaasRealm;
 import org.apache.karaf.shell.console.Completer;
 import org.apache.karaf.shell.console.completer.StringsCompleter;
 
+import javax.security.auth.login.AppConfigurationEntry;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+@Component(name = "org.apache.karaf.jaas.command.loginmodule.completer", immediate = true)
+@Service(Completer.class)
+@Properties(
+        @Property(name = "completer.type", value = LoginModuleNameCompleter.COMPLETER_TYPE)
+)
 public class LoginModuleNameCompleter implements Completer {
 
-    private List<JaasRealm> realms;
+    public static final String COMPLETER_TYPE = "jaas.loginmodule";
+
+    @Reference(referenceInterface = JaasRealm.class, policy = ReferencePolicy.DYNAMIC, cardinality = ReferenceCardinality.OPTIONAL_MULTIPLE,
+            bind = "bindRealm", unbind = "unbindRealm"
+    )
+    private final List<JaasRealm> realms = new CopyOnWriteArrayList<JaasRealm>();
+
 
     public int complete(String buffer, int cursor, List<String> candidates) {
         StringsCompleter delegate = new StringsCompleter();
@@ -64,8 +84,12 @@ public class LoginModuleNameCompleter implements Completer {
         return realms;
     }
 
-    public void setRealms(List<JaasRealm> realms) {
-        this.realms = realms;
+    void bindRealm(JaasRealm realm) {
+        realms.add(realm);
+    }
+
+    void unbindRealm(JaasRealm realm) {
+        realms.remove(realm);
     }
 
 }

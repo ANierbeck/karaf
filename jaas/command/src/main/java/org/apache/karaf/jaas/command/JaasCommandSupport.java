@@ -15,23 +15,34 @@
  */
 package org.apache.karaf.jaas.command;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.ReferenceCardinality;
+import org.apache.felix.scr.annotations.ReferencePolicy;
 import org.apache.karaf.jaas.config.JaasRealm;
 import org.apache.karaf.jaas.modules.BackingEngine;
 import org.apache.karaf.jaas.modules.BackingEngineService;
 import org.apache.karaf.shell.console.OsgiCommandSupport;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
 import javax.security.auth.login.AppConfigurationEntry;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-public abstract class JaasCommandSupport extends OsgiCommandSupport {
+@Component(name = "org.apache.karaf.jaas.command.base", componentAbstract = true)
+public abstract class JaasCommandSupport extends ComponentAction {
 
     public static final String JAAS_REALM = "JaasCommand.REALM";
     public static final String JAAS_ENTRY = "JaasCommand.ENTRY";
     public static final String JAAS_CMDS = "JaasCommand.COMMANDS";
 
-    private List<JaasRealm> realms;
+    @Reference(referenceInterface = JaasRealm.class, cardinality = ReferenceCardinality.OPTIONAL_MULTIPLE, policy = ReferencePolicy.DYNAMIC,
+            bind = "bindRealm", unbind = "unbindRealm"
+    )
+    private final List<JaasRealm> realms = new CopyOnWriteArrayList<JaasRealm>();
 
+    @Reference
     protected BackingEngineService backingEngineService;
 
     protected abstract Object doExecute(BackingEngine engine) throws Exception;
@@ -42,10 +53,10 @@ public abstract class JaasCommandSupport extends OsgiCommandSupport {
      * @return
      * @throws Exception
      */
-    protected Object doExecute() throws Exception {
-        JaasRealm realm = (JaasRealm) session.get(JAAS_REALM);
-        AppConfigurationEntry entry = (AppConfigurationEntry) session.get(JAAS_ENTRY);
-        Queue commandQueue = (Queue) session.get(JAAS_CMDS);
+    public Object doExecute() throws Exception {
+        JaasRealm realm = (JaasRealm) getSession().get(JAAS_REALM);
+        AppConfigurationEntry entry = (AppConfigurationEntry) getSession().get(JAAS_ENTRY);
+        Queue commandQueue = (Queue) getSession().get(JAAS_CMDS);
 
         if (realm != null && entry != null) {
             if (commandQueue != null) {
@@ -57,13 +68,18 @@ public abstract class JaasCommandSupport extends OsgiCommandSupport {
         return null;
     }
 
+    public void bindRealm(JaasRealm realm) {
+        realms.add(realm);
+    }
+
+    public void unbindRealm(JaasRealm realm) {
+        realms.remove(realm);
+    }
+
     public List<JaasRealm> getRealms() {
         return realms;
     }
 
-    public void setRealms(List<JaasRealm> realms) {
-        this.realms = realms;
-    }
 
     public BackingEngineService getBackingEngineService() {
         return backingEngineService;

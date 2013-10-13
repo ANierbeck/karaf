@@ -19,18 +19,35 @@ import java.util.Queue;
 import javax.security.auth.login.AppConfigurationEntry;
 
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.jaas.boot.ProxyLoginModule;
 import org.apache.karaf.jaas.config.JaasRealm;
 import org.apache.karaf.jaas.modules.BackingEngine;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "jaas", name = "pending", description = "List the modification on the selected JAAS Realm/Login ModuleImpl")
+@Command(scope = ListPendingCommand.SCOPE_VALUE, name = ListPendingCommand.FUNCTION_VALUE, description = ListPendingCommand.DESCRIPTION)
+@Component(name = ListPendingCommand.ID, description = ListPendingCommand.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ListPendingCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ListPendingCommand.FUNCTION_VALUE)
+})
 public class ListPendingCommand extends JaasCommandSupport {
 
+    public static final String ID = "org.apache.karaf.jaas.command.pending";
+    public static final String SCOPE_VALUE = "jaas";
+    public static final String FUNCTION_VALUE =  "pending";
+    public static final String DESCRIPTION = "List the modification on the selected JAAS Realm/Login ModuleImpl.";
+
     @Override
-    protected Object doExecute() throws Exception {
-        JaasRealm realm = (JaasRealm) session.get(JAAS_REALM);
-        AppConfigurationEntry entry = (AppConfigurationEntry) session.get(JAAS_ENTRY);
-        Queue<JaasCommandSupport> commandQueue = (Queue<JaasCommandSupport>) session.get(JAAS_CMDS);
+    public Object doExecute() throws Exception {
+        JaasRealm realm = (JaasRealm) getSession().get(JAAS_REALM);
+        AppConfigurationEntry entry = (AppConfigurationEntry) getSession().get(JAAS_ENTRY);
+        Queue<JaasCommandSupport> commandQueue = (Queue<JaasCommandSupport>) getSession().get(JAAS_CMDS);
 
         if (realm != null && entry != null) {
             String moduleClass = (String) entry.getOptions().get(ProxyLoginModule.PROPERTY_MODULE);

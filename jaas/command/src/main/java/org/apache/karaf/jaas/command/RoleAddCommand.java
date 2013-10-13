@@ -17,10 +17,27 @@ package org.apache.karaf.jaas.command;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.jaas.modules.BackingEngine;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "jaas", name = "roleadd", description = "Add a role to a user")
+@Command(scope = RoleAddCommand.SCOPE_VALUE, name = RoleAddCommand.FUNCTION_VALUE, description = RoleAddCommand.DESCRIPTION)
+@Component(name = RoleAddCommand.ID, description = RoleAddCommand.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = RoleAddCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = RoleAddCommand.FUNCTION_VALUE)
+})
 public class RoleAddCommand extends JaasCommandSupport {
+
+    public static final String ID = "org.apache.karaf.jaas.command.roleadd";
+    public static final String SCOPE_VALUE = "jaas";
+    public static final String FUNCTION_VALUE =  "roleadd";
+    public static final String DESCRIPTION = "Add a role to a user.";
 
     @Argument(index = 0, name = "username", description = "User Name", required = true, multiValued = false)
     private String username;

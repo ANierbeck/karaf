@@ -15,33 +15,44 @@
  */
 package org.apache.karaf.jaas.modules;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.ReferenceCardinality;
+import org.apache.felix.scr.annotations.ReferencePolicy;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.jaas.boot.ProxyLoginModule;
 
 import javax.security.auth.login.AppConfigurationEntry;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
+@Component(name = "org.apache.karaf.jaas.modules.backingengineservice", immediate = true)
+@Service(BackingEngineService.class)
 public class BackingEngineService {
 
-    private List<BackingEngineFactory> engineFactories;
+    @Reference(referenceInterface = BackingEngineFactory.class, cardinality = ReferenceCardinality.OPTIONAL_MULTIPLE, policy = ReferencePolicy.DYNAMIC,
+    bind = "bindBackingEngineFactory", unbind = "unbindBackingEngineFactory")
+    private final List<BackingEngineFactory> factories = new CopyOnWriteArrayList<BackingEngineFactory>();
 
     public BackingEngine get(AppConfigurationEntry entry) {
-
-        if (engineFactories != null) {
-            for (BackingEngineFactory factory : engineFactories) {
-                String loginModuleClass = (String) entry.getOptions().get(ProxyLoginModule.PROPERTY_MODULE);
-                if (factory.getModuleClass().equals(loginModuleClass)) {
-                    return factory.build(entry.getOptions());
-                }
+        for (BackingEngineFactory factory : factories) {
+            String loginModuleClass = (String) entry.getOptions().get(ProxyLoginModule.PROPERTY_MODULE);
+            if (factory.getModuleClass().equals(loginModuleClass)) {
+                return factory.build(entry.getOptions());
             }
         }
         return null;
     }
 
-    public List<BackingEngineFactory> getEngineFactories() {
-        return engineFactories;
+    public List<BackingEngineFactory> getFactories() {
+        return factories;
     }
 
-    public void setEngineFactories(List<BackingEngineFactory> engineFactories) {
-        this.engineFactories = engineFactories;
+    public void bindBackingEngineFactory(BackingEngineFactory factory) {
+        this.factories.add(factory);
+    }
+
+    public void unbindBackingEngineFactory(BackingEngineFactory factory) {
+        this.factories.remove(factory);
     }
 }
