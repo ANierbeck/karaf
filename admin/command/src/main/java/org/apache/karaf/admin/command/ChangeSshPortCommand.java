@@ -18,9 +18,26 @@ package org.apache.karaf.admin.command;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "admin", name = "change-ssh-port", description = "Changes the secure shell port of an existing container instance.")
+@Command(scope = ChangeSshPortCommand.SCOPE_VALUE, name = ChangeSshPortCommand.FUNCTION_VALUE, description = ChangeSshPortCommand.DESCRIPTION)
+@Component(name = ChangeSshPortCommand.ID, description = ChangeSshPortCommand.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ChangeSshPortCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ChangeSshPortCommand.FUNCTION_VALUE)
+})
 public class ChangeSshPortCommand extends AdminCommandSupport {
+
+    public static final String ID = "org.apache.karaf.admin.command.changesshport";
+    public static final String SCOPE_VALUE = "admin";
+    public static final String FUNCTION_VALUE =  "change-ssh-port";
+    public static final String DESCRIPTION = "Changes the secure shell port of an existing container instance.";
 
     @Argument(index = 0, name = "name", description="The name of the container instance", required = true, multiValued = false)
     private String instance = null;
@@ -28,7 +45,7 @@ public class ChangeSshPortCommand extends AdminCommandSupport {
     @Argument(index = 1, name = "port", description = "The new secure shell port to set", required = true, multiValued = false)
     private int port = 0;
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         getExistingInstance(instance).changeSshPort(port);
         return null;
     }

@@ -18,13 +18,30 @@ package org.apache.karaf.admin.command;
 
 import org.apache.felix.gogo.commands.Option;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.admin.Instance;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
 /**
  * List available instances
  */
-@Command(scope = "admin", name = "list", description = "Lists all existing container instances.")
+@Command(scope = ListCommand.SCOPE_VALUE, name = ListCommand.FUNCTION_VALUE, description = ListCommand.DESCRIPTION)
+@Component(name = ListCommand.ID, description = ListCommand.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ListCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ListCommand.FUNCTION_VALUE)
+})
 public class ListCommand extends AdminCommandSupport {
+
+    public static final String ID = "org.apache.karaf.admin.command.list";
+    public static final String SCOPE_VALUE = "admin";
+    public static final String FUNCTION_VALUE =  "list";
+    public static final String DESCRIPTION = "Lists all existing container instances.";
 
     @Option(name = "-l", aliases = { "--location" }, description = "Displays the location of the container instances", required = false, multiValued = false)
     boolean location;
@@ -32,7 +49,7 @@ public class ListCommand extends AdminCommandSupport {
     @Option(name = "-o", aliases = { "--java-opts" }, description = "Displays the Java options used to launch the JVM", required = false, multiValued = false)
     boolean javaOpts;
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         getAdminService().refreshInstance();
         Instance[] instances = getAdminService().getInstances();
         if (javaOpts) {

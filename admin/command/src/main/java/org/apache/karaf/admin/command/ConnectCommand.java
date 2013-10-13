@@ -23,9 +23,26 @@ import java.util.List;
 import org.apache.felix.gogo.commands.Option;
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "admin", name = "connect", description = "Connects to an existing container instance.")
+@Command(scope = ConnectCommand.SCOPE_VALUE, name = ConnectCommand.FUNCTION_VALUE, description = ConnectCommand.DESCRIPTION)
+@Component(name = ConnectCommand.ID, description = ConnectCommand.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ConnectCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ConnectCommand.FUNCTION_VALUE)
+})
 public class ConnectCommand extends AdminCommandSupport {
+
+    public static final String ID = "org.apache.karaf.admin.command.connect";
+    public static final String SCOPE_VALUE = "admin";
+    public static final String FUNCTION_VALUE =  "connect";
+    public static final String DESCRIPTION = "Connects to an existing container instance.";
 
     @Option(name="-u", aliases={"--username"}, description="Remote user name", required = false, multiValued = false)
     private String username;
@@ -39,7 +56,7 @@ public class ConnectCommand extends AdminCommandSupport {
     @Argument(index = 1, name = "command", description = "Optional command to execute", required = false, multiValued = true)
     private List<String> command;
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         String cmdStr = "";
         if (command != null) {
             StringBuilder sb = new StringBuilder();
@@ -55,12 +72,12 @@ public class ConnectCommand extends AdminCommandSupport {
         int port = getExistingInstance(instance).getSshPort();
         if (username != null) {
             if (password == null) {
-                session.execute("ssh -l " + username + " -p " + port + " localhost " + cmdStr);
+                getSession().execute("ssh -l " + username + " -p " + port + " localhost " + cmdStr);
             } else {
-                session.execute("ssh -l " + username + " -P " + password + " -p " + port + " localhost " + cmdStr);
+                getSession().execute("ssh -l " + username + " -P " + password + " -p " + port + " localhost " + cmdStr);
             }
         } else {
-            session.execute("ssh -p " + port + " localhost " + cmdStr);
+            getSession().execute("ssh -p " + port + " localhost " + cmdStr);
         }
         return null;
     }

@@ -18,14 +18,31 @@ package org.apache.karaf.admin.command;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "admin", name = "stop", description = "Stops an existing container instance.")
+@Command(scope = StopCommand.SCOPE_VALUE, name = StopCommand.FUNCTION_VALUE, description = StopCommand.DESCRIPTION)
+@Component(name = StopCommand.ID, description = StopCommand.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = StopCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = StopCommand.FUNCTION_VALUE)
+})
 public class StopCommand extends AdminCommandSupport {
+
+    public static final String ID = "org.apache.karaf.admin.command.stop";
+    public static final String SCOPE_VALUE = "admin";
+    public static final String FUNCTION_VALUE =  "stop";
+    public static final String DESCRIPTION = "Stops an existing container instance.";
 
     @Argument(index = 0, name = "name", description = "The name of the container instance", required = true, multiValued = false)
     private String instance = null;
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         getExistingInstance(instance).stop();
         return null;
     }

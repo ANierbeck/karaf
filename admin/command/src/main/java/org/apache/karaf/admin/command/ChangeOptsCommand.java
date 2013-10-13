@@ -18,9 +18,26 @@ package org.apache.karaf.admin.command;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "admin", name = "change-opts", description = "Changes the Java options of an existing container instance.")
+@Command(scope = ChangeOptsCommand.SCOPE_VALUE, name = ChangeOptsCommand.FUNCTION_VALUE, description = ChangeOptsCommand.DESCRIPTION)
+@Component(name = ChangeOptsCommand.ID, description = ChangeOptsCommand.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ChangeOptsCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ChangeOptsCommand.FUNCTION_VALUE)
+})
 public class ChangeOptsCommand extends AdminCommandSupport {
+
+    public static final String ID = "org.apache.karaf.admin.command.changeopts";
+    public static final String SCOPE_VALUE = "admin";
+    public static final String FUNCTION_VALUE =  "changeopts";
+    public static final String DESCRIPTION = "Changes the Java options of an existing container instance.";
 
     @Argument(index = 0, name = "name", description="The name of the container instance", required = true, multiValued = false)
     private String instance = null;
@@ -28,7 +45,7 @@ public class ChangeOptsCommand extends AdminCommandSupport {
     @Argument(index = 1, name = "javaOpts", description = "The new Java options to set", required = true, multiValued = false)
     private String javaOpts;
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         getExistingInstance(instance).changeJavaOpts(javaOpts);
         return null;
     }

@@ -16,12 +16,17 @@
  */
 package org.apache.karaf.admin.command;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.karaf.admin.AdminService;
 import org.apache.karaf.admin.Instance;
 import org.apache.karaf.shell.console.OsgiCommandSupport;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-public abstract class AdminCommandSupport extends OsgiCommandSupport {
+@Component(name = "org.apache.karaf.admin.command.base", componentAbstract = true)
+public abstract class AdminCommandSupport extends ComponentAction {
 
+    @Reference
     private AdminService adminService;
 
     public AdminService getAdminService() {

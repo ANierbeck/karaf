@@ -18,12 +18,29 @@ package org.apache.karaf.admin.command;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
 /**
  * Rename an existing Karaf container instance.
  */
-@Command(scope = "admin", name = "rename", description = "Renames an existing container instance.")
+@Command(scope = RenameCommand.SCOPE_VALUE, name = RenameCommand.FUNCTION_VALUE, description = RenameCommand.DESCRIPTION)
+@Component(name = RenameCommand.ID, description = RenameCommand.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = RenameCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = RenameCommand.FUNCTION_VALUE)
+})
 public class RenameCommand extends AdminCommandSupport {
+
+    public static final String ID = "org.apache.karaf.admin.command.rename";
+    public static final String SCOPE_VALUE = "admin";
+    public static final String FUNCTION_VALUE =  "rename";
+    public static final String DESCRIPTION = "Renames an existing container instance.";
 
     @Argument(index = 0, name = "name", description = "The name of the container instance to rename", required = true, multiValued = false)
     String instance = null;
@@ -31,7 +48,7 @@ public class RenameCommand extends AdminCommandSupport {
     @Argument(index = 1, name = "new-name", description = "The new name of the container instance", required = true, multiValued = false)
     String newName = null;
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         getAdminService().renameInstance(instance, newName);
         return null;
     }

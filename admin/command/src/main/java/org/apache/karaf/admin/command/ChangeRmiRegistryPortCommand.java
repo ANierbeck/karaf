@@ -18,9 +18,26 @@ package org.apache.karaf.admin.command;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "admin", name = "change-rmi-registry-port", description = "Changes the RMI registry port (used by management layer) of an existing container instance.")
+@Command(scope = ChangeRmiRegistryPortCommand.SCOPE_VALUE, name = ChangeRmiRegistryPortCommand.FUNCTION_VALUE, description = ChangeRmiRegistryPortCommand.DESCRIPTION)
+@Component(name = ChangeRmiRegistryPortCommand.ID, description = ChangeRmiRegistryPortCommand.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ChangeRmiRegistryPortCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ChangeRmiRegistryPortCommand.FUNCTION_VALUE)
+})
 public class ChangeRmiRegistryPortCommand extends AdminCommandSupport {
+
+    public static final String ID = "org.apache.karaf.admin.command.changermiregistryport";
+    public static final String SCOPE_VALUE = "admin";
+    public static final String FUNCTION_VALUE =  "change-rmi-registry-port";
+    public static final String DESCRIPTION = "Changes the RMI registry port (used by management layer) of an existing container instance.";
 
     @Argument(index = 0, name = "name", description = "The name of the container instance", required = true, multiValued = false)
     private String instance = null;
@@ -28,7 +45,7 @@ public class ChangeRmiRegistryPortCommand extends AdminCommandSupport {
     @Argument(index = 1, name = "port", description = "The new RMI registry port to set", required = true, multiValued = false)
     private int port = 0;
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         getExistingInstance(instance).changeRmiRegistryPort(port);
         return null;
     }

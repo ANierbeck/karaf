@@ -19,10 +19,27 @@ package org.apache.karaf.admin.command;
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.admin.Instance;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "admin", name = "start", description = "Starts an existing container instance.")
+@Command(scope = StartCommand.SCOPE_VALUE, name = StartCommand.FUNCTION_VALUE, description = StartCommand.DESCRIPTION)
+@Component(name = StartCommand.ID, description = StartCommand.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = StartCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = StartCommand.FUNCTION_VALUE)
+})
 public class StartCommand extends AdminCommandSupport {
+
+    public static final String ID = "org.apache.karaf.admin.command.start";
+    public static final String SCOPE_VALUE = "admin";
+    public static final String FUNCTION_VALUE =  "start";
+    public static final String DESCRIPTION = "Starts an existing container instance.";
 
     @Option(name = "-o", aliases = { "--java-opts"}, description = "Java options when launching the instance", required = false, multiValued = false)
     private String javaOpts;
@@ -33,7 +50,7 @@ public class StartCommand extends AdminCommandSupport {
     @Argument(index = 0, name = "name", description = "The name of the container instance", required = true, multiValued = false)
     private String instance = null;
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         Instance child = getExistingInstance(instance);
         if (wait) {
             String state = child.getState();

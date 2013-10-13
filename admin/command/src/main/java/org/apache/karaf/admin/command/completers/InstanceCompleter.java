@@ -18,6 +18,11 @@ package org.apache.karaf.admin.command.completers;
 
 import java.util.List;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.admin.AdminService;
 import org.apache.karaf.admin.Instance;
 import org.apache.karaf.shell.console.completer.StringsCompleter;
@@ -29,7 +34,16 @@ import org.apache.karaf.shell.console.Completer;
  * Displays a list of configured server instances for the Admin commands.
  *
  */
+@Component(name = "org.apache.karaf.admin.command.instance.completer", immediate = true)
+@Service(Completer.class)
+@Properties(
+        @Property(name = "completer.type", value = InstanceCompleter.COMPLETER_TYPE)
+)
 public class InstanceCompleter implements Completer {
+
+    public static final String COMPLETER_TYPE = "admin.instance";
+
+    @Reference
     private AdminService adminService;
 
     public void setAdminService(AdminService adminService) {

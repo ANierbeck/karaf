@@ -18,9 +18,26 @@ package org.apache.karaf.admin.command;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "admin", name = "change-rmi-server-port", description = "Changes the RMI server port (used by management layer) of an existing container instance.")
+@Command(scope = ChangeRmiServerPortCommand.SCOPE_VALUE, name = ChangeRmiServerPortCommand.FUNCTION_VALUE, description = ChangeRmiServerPortCommand.DESCRIPTION)
+@Component(name = ChangeRmiServerPortCommand.ID, description = ChangeRmiServerPortCommand.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ChangeRmiServerPortCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ChangeRmiServerPortCommand.FUNCTION_VALUE)
+})
 public class ChangeRmiServerPortCommand extends AdminCommandSupport {
+
+    public static final String ID = "org.apache.karaf.admin.command.changermiserverport";
+    public static final String SCOPE_VALUE = "admin";
+    public static final String FUNCTION_VALUE =  "change-rmi-server-port";
+    public static final String DESCRIPTION = "Changes the RMI server port (used by management layer) of an existing container instance.";
 
     @Argument(index = 0, name = "name", description = "The name of the container instance", required = true, multiValued = false)
     private String instance = null;

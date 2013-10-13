@@ -18,16 +18,34 @@ package org.apache.karaf.admin.command;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
 /**
  * Destroy an existing Karaf instance
  */
-@Command(scope = "admin", name = "destroy", description = "Destroys an existing container instance.")
+@Command(scope = DestroyCommand.SCOPE_VALUE, name = DestroyCommand.FUNCTION_VALUE, description = DestroyCommand.DESCRIPTION)
+@Component(name = DestroyCommand.ID, description = DestroyCommand.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = DestroyCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = DestroyCommand.FUNCTION_VALUE)
+})
 public class DestroyCommand extends AdminCommandSupport {
+
+    public static final String ID = "org.apache.karaf.admin.command.destroy";
+    public static final String SCOPE_VALUE = "admin";
+    public static final String FUNCTION_VALUE =  "destroy";
+    public static final String DESCRIPTION = "Destroys an existing container instance.";
+
     @Argument(index = 0, name = "name", description="The name of the container instance to destroy", required = true, multiValued = false)
     private String instance = null;
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         getExistingInstance(instance).destroy();
         return null;
     }

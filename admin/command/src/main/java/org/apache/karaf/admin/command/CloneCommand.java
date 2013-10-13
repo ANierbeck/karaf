@@ -19,13 +19,30 @@ package org.apache.karaf.admin.command;
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.admin.InstanceSettings;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
 /**
  * Clone an existing instance.
  */
-@Command(scope = "instance", name = "clone", description = "Clones an existing container instance.")
+@Command(scope = CloneCommand.SCOPE_VALUE, name = CloneCommand.FUNCTION_VALUE, description = CloneCommand.DESCRIPTION)
+@Component(name = CloneCommand.ID, description = CloneCommand.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = CloneCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = CloneCommand.FUNCTION_VALUE)
+})
 public class CloneCommand extends AdminCommandSupport {
+
+    public static final String ID = "org.apache.karaf.admin.command.clone";
+    public static final String SCOPE_VALUE = "admin";
+    public static final String FUNCTION_VALUE =  "clone";
+    public static final String DESCRIPTION = "Clones an existing container instance.";
 
     @Option(name = "-s", aliases = {"--ssh-port"}, description = "Port number for remote secure shell connection", required = false, multiValued = false)
     int sshPort = 0;
@@ -52,7 +69,7 @@ public class CloneCommand extends AdminCommandSupport {
     String cloneName;
 
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         InstanceSettings settings = new InstanceSettings(sshPort, rmiRegistryPort, rmiServerPort, location, javaOpts, null, null);
         getAdminService().cloneInstance(name, cloneName, settings);
         return null;
