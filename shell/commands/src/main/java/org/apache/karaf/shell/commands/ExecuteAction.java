@@ -20,19 +20,41 @@ import java.util.List;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.shell.console.AbstractAction;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.apache.karaf.util.process.PumpStreamHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Execute system processes.
  */
-@Command(scope = "shell", name = "exec", description = "Executes system processes.")
-public class ExecuteAction extends AbstractAction {
+@Command(scope = ExecuteAction.SCOPE_VALUE, name = ExecuteAction.FUNCTION_VALUE, description = ExecuteAction.DESCRIPTION)
+@Component(name = ExecuteAction.ID, description = ExecuteAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ExecuteAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ExecuteAction.FUNCTION_VALUE)
+})
+public class ExecuteAction extends ComponentAction {
+
+    private static final Logger log = LoggerFactory.getLogger(ExecuteAction.class);
+
+    public static final String ID = "org.apache.karaf.shell.commands.exec";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "exec";
+    public static final String DESCRIPTION = "Executes system processes.";
+
 
     @Argument(index = 0, name = "command", description = "Execution command with arguments", required = true, multiValued = true)
     private List<String> args;
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         ProcessBuilder builder = new ProcessBuilder(args);
 
         PumpStreamHandler handler = new PumpStreamHandler(System.in, System.out, System.err, "Command" + args.toString());

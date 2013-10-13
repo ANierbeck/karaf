@@ -27,21 +27,39 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.shell.console.AbstractAction;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
 /**
  * Grab the text from the standard input and return it as a string.
  * Also write this text to a file if specified
  */
-@Command(scope = "shell", name = "tac", description = "Captures the STDIN and returns it as a string. Optionally writes the content to a file.")
-public class TacAction extends AbstractAction {
+@Command(scope = TacAction.SCOPE_VALUE, name = TacAction.FUNCTION_VALUE, description = TacAction.DESCRIPTION)
+@Component(name = TacAction.ID, description = TacAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = TacAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = TacAction.FUNCTION_VALUE)
+})
+public class TacAction extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.commands.tac";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "tac";
+    public static final String DESCRIPTION = "Captures the STDIN and returns it as a string. Optionally writes the content to a file.";
+
 
     @Option(name = "-f", aliases = {}, description = "Outputs the content to the given file", required = false, multiValued = false)
     private File file;
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         StringWriter sw = new StringWriter();
         Writer[] writers;
         if (file != null) {

@@ -18,12 +18,30 @@ package org.apache.karaf.shell.commands;
 
 import java.util.Collection;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.shell.console.AbstractAction;
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "shell", name = "printf", description = "Formats and prints arguments.")
-public class PrintfAction extends AbstractAction {
+@Command(scope = PrintfAction.SCOPE_VALUE, name = PrintfAction.FUNCTION_VALUE, description = PrintfAction.DESCRIPTION)
+@Component(name = PrintfAction.ID, description = PrintfAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = PrintfAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = PrintfAction.FUNCTION_VALUE)
+})
+public class PrintfAction extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.commands.printf";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "printf";
+    public static final String DESCRIPTION = "Formats and prints arguments.";
+
 
     @Argument(index = 0, name = "format", description = "The format pattern to use", required = true, multiValued = false)
     private String format;
@@ -31,7 +49,7 @@ public class PrintfAction extends AbstractAction {
     @Argument(index = 1, name = "arguments", description = "The arguments for the given format pattern", required = true, multiValued = true)
     private Collection<Object> arguments = null;
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         System.out.printf(format, arguments.toArray());
         return null;
     }

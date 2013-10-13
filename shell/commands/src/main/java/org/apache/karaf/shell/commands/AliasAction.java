@@ -18,16 +18,33 @@ package org.apache.karaf.shell.commands;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.shell.console.AbstractAction;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "shell", name = "alias", description = "Create an alias to a command")
-public class AliasAction extends AbstractAction {
+@Command(scope = AliasAction.SCOPE_VALUE, name = AliasAction.FUNCTION_VALUE, description = AliasAction.DESCRIPTION)
+@Component(name = AliasAction.ID, description = AliasAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = AliasAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = AliasAction.FUNCTION_VALUE)
+})
+public class AliasAction extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.commands.alias";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "alias";
+    public static final String DESCRIPTION = "Creates or edits a configuration.";
 
     @Argument(index = 0, name = "command", description = "The command to alias, e.g. 'ldn = { log:display -n $args }'", required = true, multiValued = false)
     private String alias;
 
-    protected Object doExecute() throws Exception {
-        session.execute(alias);
+    public Object doExecute() throws Exception {
+        getSession().execute(alias);
         return null;
     }
 

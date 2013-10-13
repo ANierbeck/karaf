@@ -21,18 +21,37 @@ import java.util.List;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
 import org.apache.felix.gogo.commands.Argument;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.shell.console.AbstractAction;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "shell", name = "echo", description="Echoes or prints arguments to STDOUT.")
-public class EchoAction extends AbstractAction
+@Command(scope = EchoAction.SCOPE_VALUE, name = EchoAction.FUNCTION_VALUE, description = EchoAction.DESCRIPTION)
+@Component(name = EchoAction.ID, description = EchoAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = EchoAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = EchoAction.FUNCTION_VALUE)
+})
+public class EchoAction extends ComponentAction
 {
+
+    public static final String ID = "org.apache.karaf.shell.commands.echo";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "echo";
+    public static final String DESCRIPTION = "Echoes or prints arguments to STDOUT.";
+
+
     @Option(name = "-n", aliases = {}, description = "Do not print the trailing newline character", required = false, multiValued = false)
     private boolean noTrailingNewline = false;
 
     @Argument(index = 0, name = "arguments", description="Arguments to display separated by whitespaces", required = false, multiValued = true)
     private List<String> args;
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         if (args != null) {
             boolean first = true;
             for (String arg : args) {

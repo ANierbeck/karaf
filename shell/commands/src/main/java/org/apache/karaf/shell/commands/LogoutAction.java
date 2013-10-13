@@ -17,13 +17,35 @@
 package org.apache.karaf.shell.commands;
 
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.shell.console.AbstractAction;
 import org.apache.karaf.shell.console.CloseShellException;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Command(scope = "shell", name = "logout", description = "Disconnects shell from current session.")
-public class LogoutAction extends AbstractAction {
+@Command(scope = LogoutAction.SCOPE_VALUE, name = LogoutAction.FUNCTION_VALUE, description = LogoutAction.DESCRIPTION)
+@Component(name = LogoutAction.ID, description = LogoutAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = LogoutAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = LogoutAction.FUNCTION_VALUE)
+})
+public class LogoutAction extends ComponentAction {
 
-    protected Object doExecute() throws Exception {
+    private static final Logger log = LoggerFactory.getLogger(LogoutAction.class);
+
+    public static final String ID = "org.apache.karaf.shell.commands.logout";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "logout";
+    public static final String DESCRIPTION = "Disconnects shell from current session.";
+
+
+    public Object doExecute() throws Exception {
         log.info("Disconnecting from current session...");
         throw new CloseShellException();
     }

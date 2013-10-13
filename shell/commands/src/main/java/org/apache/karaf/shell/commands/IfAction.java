@@ -18,14 +18,32 @@ package org.apache.karaf.shell.commands;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.service.command.Function;
 import org.apache.karaf.shell.console.AbstractAction;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
 /**
  * Execute a closure on a list of arguments.
  */
-@Command(scope = "shell", name = "if", description = "If/Then/Else block.")
-public class IfAction extends AbstractAction {
+@Command(scope = IfAction.SCOPE_VALUE, name = IfAction.FUNCTION_VALUE, description = IfAction.DESCRIPTION)
+@Component(name = IfAction.ID, description = IfAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = IfAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = IfAction.FUNCTION_VALUE)
+})
+public class IfAction extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.commands.if";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "if";
+    public static final String DESCRIPTION = "If/Then/Else block.";
+
 
     @Argument(name = "condition", index = 0, multiValued = false, required = true, description = "The condition")
     Function condition;
@@ -37,13 +55,13 @@ public class IfAction extends AbstractAction {
     Function ifFalse;
 
     @Override
-    protected Object doExecute() throws Exception {
-        Object result = condition.execute(session, null);
+    public Object doExecute() throws Exception {
+        Object result = condition.execute(getSession(), null);
         if (isTrue(result)) {
-            return ifTrue.execute(session, null);
+            return ifTrue.execute(getSession(), null);
         } else {
             if (ifFalse != null) {
-                return ifFalse.execute(session, null);
+                return ifFalse.execute(getSession(), null);
             }
         }
         return null;

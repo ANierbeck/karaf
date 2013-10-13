@@ -29,10 +29,33 @@ import java.util.LinkedList;
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.shell.console.AbstractAction;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Command(scope = "shell", name = "tail", description = "Displays the last lines of a file.")
-public class TailAction extends AbstractAction {
+
+@Command(scope = TailAction.SCOPE_VALUE, name = TailAction.FUNCTION_VALUE, description = TailAction.DESCRIPTION)
+@Component(name = TailAction.ID, description = TailAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = TailAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = TailAction.FUNCTION_VALUE)
+})
+public class TailAction extends ComponentAction {
+
+    private static final Logger log = LoggerFactory.getLogger(TailAction.class);
+
+    public static final String ID = "org.apache.karaf.shell.commands.tail";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "tail";
+    public static final String DESCRIPTION = "Displays the last lines of a file.";
+
 
     private static final int DEFAULT_NUMBER_OF_LINES = 10;
 
@@ -50,7 +73,7 @@ public class TailAction extends AbstractAction {
     @Argument(index = 0, name = "path or url", description = "A file path or url to display.", required = false, multiValued = false)
     private String path;
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         //If no paths provided assume standar input
         if (path == null || path.trim().length() == 0) {
             if (log.isDebugEnabled()) {

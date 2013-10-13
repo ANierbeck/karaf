@@ -26,15 +26,33 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.shell.console.AbstractAction;
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Option;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.fusesource.jansi.Ansi;
 
 
-@Command(scope = "shell", name="grep", description="Prints lines matching the given pattern.", detailedDescription="classpath:grep.txt")
-public class GrepAction extends AbstractAction {
+@Command(scope = GrepAction.SCOPE_VALUE, name = GrepAction.FUNCTION_VALUE, description = GrepAction.DESCRIPTION, detailedDescription="classpath:grep.txt")
+@Component(name = GrepAction.ID, description = GrepAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = GrepAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = GrepAction.FUNCTION_VALUE)
+})
+public class GrepAction extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.commands.grep";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "grep";
+    public static final String DESCRIPTION = "Prints lines matching the given pattern.";
+
 
     public static enum ColorOption {
         never,
@@ -81,7 +99,7 @@ public class GrepAction extends AbstractAction {
     private int context = 0;
 
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         if (after < 0) {
             after = context;
         }

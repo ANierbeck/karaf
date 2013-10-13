@@ -25,16 +25,38 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.List;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.shell.console.AbstractAction;
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Option;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Concatenate and print files and/or URLs.
  */
-@Command(scope = "shell", name = "cat", description = "Displays the content of a file or URL.")
-public class CatAction extends AbstractAction {
+@Command(scope = CatAction.SCOPE_VALUE, name = CatAction.FUNCTION_VALUE, description = CatAction.DESCRIPTION)
+@Component(name = CatAction.ID, description = CatAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = CatAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = CatAction.FUNCTION_VALUE)
+})
+public class CatAction extends ComponentAction {
+
+    private static final Logger log = LoggerFactory.getLogger(CatAction.class);
+
+    public static final String ID = "org.apache.karaf.shell.commands.cat";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "cat";
+    public static final String DESCRIPTION = "Displays the content of a file or URL.";
+
 
     @Option(name = "-n", aliases = {}, description = "Number the output lines, starting at 1.", required = false, multiValued = false)
     private boolean displayLineNumbers;
@@ -42,7 +64,7 @@ public class CatAction extends AbstractAction {
     @Argument(index = 0, name = "paths or urls", description = "A list of file paths or urls to display separated by whitespace (use - for STDIN)", required = true, multiValued = true)
     private List<String> paths;
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         //
         // Support "-" if length is one, and read from io.in
         // This will help test command pipelines.

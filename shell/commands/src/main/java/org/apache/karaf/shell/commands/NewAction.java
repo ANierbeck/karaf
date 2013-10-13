@@ -21,7 +21,13 @@ import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.converter.DefaultConverter;
 import org.apache.felix.gogo.commands.converter.ReifiedType;
 import org.apache.felix.gogo.commands.converter.GenericType;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.shell.console.AbstractAction;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -38,8 +44,20 @@ import java.util.Map;
 /**
  * Instantiate a new object
  */
-@Command(scope = "shell", name = "new", description = "Creates a new java object.")
-public class NewAction extends AbstractAction {
+@Command(scope = NewAction.SCOPE_VALUE, name = NewAction.FUNCTION_VALUE, description = NewAction.DESCRIPTION)
+@Component(name = NewAction.ID, description = NewAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = NewAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = NewAction.FUNCTION_VALUE)
+})
+public class NewAction extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.commands.new";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "new";
+    public static final String DESCRIPTION = "Creates a new java object.";
+
 
     @Argument(name = "class", index = 0, multiValued = false, required = true, description = "The object class")
     Class clazz;
@@ -52,7 +70,7 @@ public class NewAction extends AbstractAction {
     protected DefaultConverter converter = new DefaultConverter(getClass().getClassLoader());
 
     @Override
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         if (args == null) {
             args = Collections.emptyList();
         }

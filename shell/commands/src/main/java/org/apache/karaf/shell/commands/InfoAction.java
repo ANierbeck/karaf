@@ -38,19 +38,41 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.ReferenceCardinality;
+import org.apache.felix.scr.annotations.ReferencePolicy;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.shell.commands.info.InfoProvider;
-import org.apache.karaf.shell.console.OsgiCommandSupport;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.fusesource.jansi.Ansi;
 
-@Command(scope = "shell", name = "info", description = "Prints system information.")
-public class InfoAction extends OsgiCommandSupport {
+@Command(scope = InfoAction.SCOPE_VALUE, name = InfoAction.FUNCTION_VALUE, description = InfoAction.DESCRIPTION)
+@Component(name = InfoAction.ID, description = InfoAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@org.apache.felix.scr.annotations.Properties({
+        @Property(name = ComponentAction.SCOPE, value = InfoAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = InfoAction.FUNCTION_VALUE)
+})
+public class InfoAction extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.commands.info";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "info";
+    public static final String DESCRIPTION = "Prints system information.";
+
 
     private NumberFormat fmtI = new DecimalFormat("###,###", new DecimalFormatSymbols(Locale.ENGLISH));
     private NumberFormat fmtD = new DecimalFormat("###,##0.000", new DecimalFormatSymbols(Locale.ENGLISH));
 
-    private List<InfoProvider> infoProviders = new LinkedList<InfoProvider>();
+    @Reference(referenceInterface = InfoProvider.class, policy = ReferencePolicy.DYNAMIC, cardinality = ReferenceCardinality.OPTIONAL_MULTIPLE,
+            bind = "bindInfoProvider", unbind = "unbindInfoProvider"
+    )
+    private final List<InfoProvider> infoProviders = new LinkedList<InfoProvider>();
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         int maxNameLen;
 
         RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
@@ -67,8 +89,8 @@ public class InfoAction extends OsgiCommandSupport {
         printValue("Karaf version", maxNameLen, System.getProperty("karaf.version"));
         printValue("Karaf home", maxNameLen, System.getProperty("karaf.home"));
         printValue("Karaf base", maxNameLen, System.getProperty("karaf.base"));
-        printValue("OSGi Framework", maxNameLen, bundleContext.getBundle(0).getSymbolicName() + " - " +
-                bundleContext.getBundle(0).getVersion());
+        printValue("OSGi Framework", maxNameLen, getBundleContext().getBundle(0).getSymbolicName() + " - " +
+                getBundleContext().getBundle(0).getVersion());
         System.out.println();
 
         System.out.println("JVM");
@@ -213,11 +235,11 @@ public class InfoAction extends OsgiCommandSupport {
         return sb.toString();
     }
 
-    public List<InfoProvider> getInfoProviders() {
-        return infoProviders;
+    void bindInfoProvider(InfoProvider infoProvider) {
+        infoProviders.add(infoProvider);
     }
 
-    public void setInfoProviders(List<InfoProvider> infoProviders) {
-        this.infoProviders = infoProviders;
+    void unbindInfoProvider(InfoProvider infoProvider) {
+        infoProviders.remove(infoProvider);
     }
 }

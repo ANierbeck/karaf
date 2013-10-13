@@ -27,17 +27,35 @@ import java.util.List;
 import jline.Terminal;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.shell.console.AbstractAction;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "shell", name = "more", description = "File pager.")
-public class MoreAction extends AbstractAction {
+@Command(scope = MoreAction.SCOPE_VALUE, name = MoreAction.FUNCTION_VALUE, description = MoreAction.DESCRIPTION)
+@Component(name = MoreAction.ID, description = MoreAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = MoreAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = MoreAction.FUNCTION_VALUE)
+})
+public class MoreAction extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.commands.more";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "more";
+    public static final String DESCRIPTION = "File pager.";
+
 
     @Option(name = "--lines", description = "stop after N lines")
     int lines;
 
     @Override
-    protected Object doExecute() throws Exception {
-        Terminal term = (Terminal) session.get(".jline.terminal");
+    public Object doExecute() throws Exception {
+        Terminal term = (Terminal) getSession().get(".jline.terminal");
         if (term == null || !isTty(System.out)) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
             String line;
@@ -68,7 +86,7 @@ public class MoreAction extends AbstractAction {
                         System.out.flush();
                         System.out.print("--More--");
                         System.out.flush();
-                        c = session.getKeyboard().read();
+                        c = getSession().getKeyboard().read();
                         switch (c) {
                             case 'q':
                             case -1:
@@ -135,7 +153,7 @@ public class MoreAction extends AbstractAction {
             Method mth = out.getClass().getDeclaredMethod("getCurrent");
             mth.setAccessible(true);
             Object current = mth.invoke(out);
-            return current == session.getConsole();
+            return current == getSession().getConsole();
         } catch (Throwable t) {
             return false;
         }

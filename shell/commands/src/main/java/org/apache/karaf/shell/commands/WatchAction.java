@@ -27,12 +27,30 @@ import java.util.concurrent.TimeUnit;
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.service.command.CommandProcessor;
 import org.apache.felix.service.command.CommandSession;
 import org.apache.karaf.shell.console.AbstractAction;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "shell", name = "watch", description = "Watches & refreshes the output of a command")
-public class WatchAction extends AbstractAction {
+@Command(scope = WatchAction.SCOPE_VALUE, name = WatchAction.FUNCTION_VALUE, description = WatchAction.DESCRIPTION)
+@Component(name = WatchAction.ID, description = WatchAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = WatchAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = WatchAction.FUNCTION_VALUE)
+})
+public class WatchAction extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.commands.watch";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "watch";
+    public static final String DESCRIPTION = "atches & refreshes the output of a command.";
+
 
     @Option(name = "-n", aliases = {"--interval"}, description = "The interval between executions of the command in seconds", required = false, multiValued = false)
     private long interval = 1;
@@ -47,7 +65,7 @@ public class WatchAction extends AbstractAction {
     private ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
     @Override
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         if (arguments == null || arguments.length == 0) {
             System.err.println("Argument expected");
             return null;
@@ -59,7 +77,7 @@ public class WatchAction extends AbstractAction {
             WatchTask watchTask = new WatchTask(commandProcessor, command.toString().trim());
             executorService.scheduleAtFixedRate(watchTask, 0, interval, TimeUnit.SECONDS);
             try {
-                session.getKeyboard().read();
+                getSession().getKeyboard().read();
                 watchTask.abort();
             } finally {
                 executorService.shutdownNow();

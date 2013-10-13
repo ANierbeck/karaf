@@ -17,12 +17,34 @@
 package org.apache.karaf.shell.commands;
 
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.shell.console.AbstractAction;
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Command(scope = "shell", name = "sleep", description = "Sleeps for a bit then wakes up.")
-public class SleepAction extends AbstractAction {
+@Command(scope = SleepAction.SCOPE_VALUE, name = SleepAction.FUNCTION_VALUE, description = SleepAction.DESCRIPTION)
+@Component(name = SleepAction.ID, description = SleepAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = SleepAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = SleepAction.FUNCTION_VALUE)
+})
+public class SleepAction extends ComponentAction {
+
+    private static final Logger log = LoggerFactory.getLogger(SleepAction.class);
+
+    public static final String ID = "org.apache.karaf.shell.commands.sleep";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "sleep";
+    public static final String DESCRIPTION = "Sleeps for a bit then wakes up.";
+
 
     @Argument(index = 0, name = "duration", description = "The amount of time to sleep. The default time unit is millisecond, use -s option to use second instead.", required = true, multiValued = false)
     private long time = -1;
@@ -30,7 +52,7 @@ public class SleepAction extends AbstractAction {
     @Option(name = "-s", aliases = { "--second" }, description = "Use a duration time in seconds instead of milliseconds.", required = false, multiValued = false)
     private boolean second = false;
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         if (second) {
             log.info("Sleeping for {} second(s)", time);
             time = time * 1000;

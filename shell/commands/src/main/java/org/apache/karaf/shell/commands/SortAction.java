@@ -37,13 +37,35 @@ import java.util.regex.Pattern;
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.shell.console.AbstractAction;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Sort lines of text
  */
-@Command(scope = "shell", name = "sort", description = "Writes sorted concatenation of all files to standard output.")
-public class SortAction extends AbstractAction {
+@Command(scope = SortAction.SCOPE_VALUE, name = SortAction.FUNCTION_VALUE, description = SortAction.DESCRIPTION)
+@Component(name = SortAction.ID, description = SortAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = SortAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = SortAction.FUNCTION_VALUE)
+})
+public class SortAction extends ComponentAction {
+
+    private static final Logger log = LoggerFactory.getLogger(SortAction.class);
+
+    public static final String ID = "org.apache.karaf.shell.commands.sort";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "sort";
+    public static final String DESCRIPTION = "Writes sorted concatenation of all files to standard output.";
+
 
     @Option(name = "-f", aliases = { "-ignore-case" }, description = "fold lower case to upper case characters", required = false, multiValued = false)
     private boolean caseInsensitive;

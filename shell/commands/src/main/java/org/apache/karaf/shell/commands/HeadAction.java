@@ -28,10 +28,32 @@ import java.util.List;
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.shell.console.AbstractAction;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Command(scope = "shell", name = "head", description = "Displays the first lines of a file.")
-public class HeadAction extends AbstractAction {
+@Command(scope = HeadAction.SCOPE_VALUE, name = HeadAction.FUNCTION_VALUE, description = HeadAction.DESCRIPTION)
+@Component(name = HeadAction.ID, description = HeadAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = HeadAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = HeadAction.FUNCTION_VALUE)
+})
+public class HeadAction extends ComponentAction {
+
+    private static final Logger log = LoggerFactory.getLogger(HeadAction.class);
+
+    public static final String ID = "org.apache.karaf.shell.commands.head";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "head";
+    public static final String DESCRIPTION = "Displays the first lines of a file.";
+
 
     private static final int DEFAULT_NUMBER_OF_LINES = 10;
 
@@ -41,7 +63,7 @@ public class HeadAction extends AbstractAction {
     @Argument(index = 0, name = "paths or urls", description = "A list of file paths or urls to display separated by whitespaces.", required = false, multiValued = true)
     private List<String> paths;
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         //If no paths provided assume standar input
         if (paths == null || paths.size() == 0) {
             if (log.isDebugEnabled()) {

@@ -30,13 +30,35 @@ import java.util.List;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.shell.console.AbstractAction;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * TODO
  */
-@Command(scope = "shell", name = "source", description = "Run a script")
-public class SourceAction extends AbstractAction {
+@Command(scope = SourceAction.SCOPE_VALUE, name = SourceAction.FUNCTION_VALUE, description = SourceAction.DESCRIPTION)
+@Component(name = SourceAction.ID, description = SourceAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = SourceAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = SourceAction.FUNCTION_VALUE)
+})
+public class SourceAction extends ComponentAction {
+
+    private static final Logger log = LoggerFactory.getLogger(SourceAction.class);
+
+    public static final String ID = "org.apache.karaf.shell.commands.source";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "source";
+    public static final String DESCRIPTION = "Run a script.";
+
 
     @Argument(index = 0, name = "script", description = "A URI pointing to the script", required = true, multiValued = false)
     private String script;
@@ -45,9 +67,9 @@ public class SourceAction extends AbstractAction {
     private List<Object> args;
 
     @Override
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         BufferedReader reader = null;
-        Object arg0 = session.get("0");
+        Object arg0 = getSession().get("0");
         try {
             // First try a URL
             try {
@@ -70,15 +92,15 @@ public class SourceAction extends AbstractAction {
             }
 
             for (int i = 0; args != null && i < args.size(); i++) {
-                session.put( Integer.toString(i+1), args.get(i) );
+                getSession().put(Integer.toString(i + 1), args.get(i));
             }
 
-            return session.execute(w.toString());
+            return getSession().execute(w.toString());
         } finally {
             for (int i = 0; args != null && i < args.size(); i++) {
-                session.put( Integer.toString(i+1), null );
+                getSession().put(Integer.toString(i + 1), null);
             }
-            session.put("0", arg0);
+            getSession().put("0", arg0);
             if (reader != null) {
                 try {
                     reader.close();

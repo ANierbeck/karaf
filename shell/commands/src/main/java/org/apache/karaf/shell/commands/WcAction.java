@@ -21,13 +21,31 @@ package org.apache.karaf.shell.commands;
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.shell.console.AbstractAction;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
 import java.io.*;
 import java.util.List;
 
-@Command(scope = "shell", name = "wc", description = "Print newline, word, and byte counts for each file.")
-public class WcAction extends AbstractAction {
+@Command(scope = WcAction.SCOPE_VALUE, name = WcAction.FUNCTION_VALUE, description = WcAction.DESCRIPTION, detailedDescription = "classpath:wc.txt")
+@Component(name = WcAction.ID, description = WcAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = WcAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = WcAction.FUNCTION_VALUE)
+})
+public class WcAction extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.commands.wc";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "wc";
+    public static final String DESCRIPTION = "Print newline, word, and byte counts for each file.";
+
 
     @Option(name = "-l", aliases = { "--lines" }, description = "Print the newline counts.", required = false, multiValued = false)
     private boolean lines;
@@ -45,7 +63,7 @@ public class WcAction extends AbstractAction {
     private List<File> files;
 
     @Override
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         setDefaultOptions();
 
         String resultString;

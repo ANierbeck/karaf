@@ -21,14 +21,32 @@ import java.util.Collections;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.service.command.Function;
 import org.apache.karaf.shell.console.AbstractAction;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
 /**
  * Execute a closure on a list of arguments.
  */
-@Command(scope = "shell", name = "each", description = "Execute a closure on a list of arguments.")
-public class EachAction extends AbstractAction {
+@Command(scope = EachAction.SCOPE_VALUE, name = EachAction.FUNCTION_VALUE, description = EachAction.DESCRIPTION)
+@Component(name = EachAction.ID, description = EachAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = EachAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = EachAction.FUNCTION_VALUE)
+})
+public class EachAction extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.commands.each";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "each";
+    public static final String DESCRIPTION = "Execute a closure on a list of arguments.";
+
 
     @Argument(name = "values", index = 0, multiValued = false, required = true, description = "The collection of arguments to iterate on")
     Collection<Object> values;
@@ -37,9 +55,9 @@ public class EachAction extends AbstractAction {
     Function function;
 
     @Override
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         for (Object v : values) {
-            function.execute(session, Collections.singletonList(v));
+            function.execute(getSession(), Collections.singletonList(v));
         }
         return null;
     }

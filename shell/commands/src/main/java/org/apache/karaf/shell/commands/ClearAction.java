@@ -17,15 +17,33 @@
 package org.apache.karaf.shell.commands;
 
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.shell.console.AbstractAction;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
 /**
  * A command to clear the console buffer
  */
-@Command(scope = "shell", name = "clear", description = "Clears the console buffer.")
-public class ClearAction extends AbstractAction {
+@Command(scope = ClearAction.SCOPE_VALUE, name = ClearAction.FUNCTION_VALUE, description = ClearAction.DESCRIPTION)
+@Component(name = ClearAction.ID, description = ClearAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ClearAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ClearAction.FUNCTION_VALUE)
+})
+public class ClearAction extends ComponentAction {
 
-	protected Object doExecute() throws Exception {
+    public static final String ID = "org.apache.karaf.shell.commands.clear";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "clear";
+    public static final String DESCRIPTION = "Clears the console buffer.";
+
+
+    public Object doExecute() throws Exception {
 		System.out.print("\33[2J");
 		System.out.flush();
 		System.out.print("\33[1;1H");

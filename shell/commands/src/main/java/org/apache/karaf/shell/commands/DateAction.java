@@ -19,14 +19,31 @@ package org.apache.karaf.shell.commands;
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
-import org.apache.karaf.shell.console.AbstractAction;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-@Command(scope = "shell", name = "date", description = "Display the current time in the given FORMAT")
-public class DateAction extends AbstractAction {
+@Command(scope = DateAction.SCOPE_VALUE, name = DateAction.FUNCTION_VALUE, description = DateAction.DESCRIPTION)
+@Component(name = DateAction.ID, description = DateAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = DateAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = DateAction.FUNCTION_VALUE)
+})
+public class DateAction extends ComponentAction {
+
+    public static final String ID = "org.apache.karaf.shell.commands.date";
+    public static final String SCOPE_VALUE = "shell";
+    public static final String FUNCTION_VALUE =  "date";
+    public static final String DESCRIPTION = "Display the current time in the given FORMAT";
+
 
     @Option(name = "-d", aliases = { "--date" }, description = "Display time described, not now", multiValued = false, required = false)
     private String date;
@@ -34,7 +51,7 @@ public class DateAction extends AbstractAction {
     @Argument(index = 0, name = "format", description = "Output format", multiValued = false, required = false)
     private String format;
 
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         Date d;
         if (date == null || date.equalsIgnoreCase("now")) {
             d = new Date();
