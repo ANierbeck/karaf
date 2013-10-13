@@ -19,7 +19,12 @@ package org.apache.karaf.shell.scr.action;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.scr.Component;
 import org.apache.felix.scr.ScrService;
-import org.apache.karaf.shell.scr.ScrCommandConstants;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+import org.apache.karaf.shell.scr.ScrCommands;
 import org.apache.karaf.shell.scr.ScrUtils;
 import org.apache.karaf.shell.scr.support.IdComparator;
 
@@ -28,10 +33,19 @@ import java.util.Arrays;
 /**
  * Lists all the components currently installed.
  */
-@Command(scope = ScrCommandConstants.SCR_COMMAND, 
-         name = ScrCommandConstants.LIST_FUNCTION, 
-         description = "Displays a list of available components")
+@Command(scope = ListAction.SCOPE_VALUE, name = ListAction.FUNCTION_VALUE, description = ListAction.DESCRIPTION)
+@org.apache.felix.scr.annotations.Component(name = ListAction.ID, description = ListAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ListAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ListAction.FUNCTION_VALUE)
+})
 public class ListAction extends ScrActionSupport {
+
+    public static final String ID = "org.apache.karaf.shell.scr.list";
+    public static final String SCOPE_VALUE = "scr";
+    public static final String FUNCTION_VALUE =  "list";
+    public static final String DESCRIPTION = "Displays a list of available components.";
 
     private final IdComparator idComparator = new IdComparator();
 
@@ -44,16 +58,15 @@ public class ListAction extends ScrActionSupport {
         Component[] components = scrService.getComponents();
         Arrays.sort(components, idComparator);
         for (Component component : ScrUtils.emptyIfNull(Component.class, components)) {
-            if (showHidden) {
+            if (showAll) {
                 // We display all because we are overridden
                 printComponent(component);
+            } else if (showCommands && ScrCommands.isCommandComponent(component)) {
+                printComponent(component);
+            } else if (ScrCommands.isHiddenComponent(component)) {
+                //Do nothing.
             } else {
-                if (ScrActionSupport.isHiddenComponent(component)) {
-                    // do nothing
-                } else {
-                    // We aren't hidden so print it
-                    printComponent(component);
-                }
+                printComponent(component);
             }
         }
         return null;

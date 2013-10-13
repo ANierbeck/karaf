@@ -20,16 +20,20 @@ import java.util.List;
 
 import org.apache.felix.scr.Component;
 import org.apache.felix.scr.ScrService;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.karaf.shell.console.Completer;
 import org.apache.karaf.shell.console.completer.StringsCompleter;
-import org.apache.karaf.shell.scr.action.ScrActionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@org.apache.felix.scr.annotations.Component(name = ScrCompleterSupport.ID, componentAbstract = true)
 public abstract class ScrCompleterSupport implements Completer {
+
+    public static final String ID = "org.apache.karaf.shell.scr.completer.base";
 
     protected final transient Logger logger = LoggerFactory.getLogger(ScrCompleterSupport.class);
 
+    @Reference
     private ScrService scrService;
 
     /**
@@ -46,20 +50,8 @@ public abstract class ScrCompleterSupport implements Completer {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Component Name to work on: " + component.getName());
                 }
-                if (ScrActionSupport.showHiddenComponent(component)) {
-                    // We display all because we are overridden
-                    if (availableComponent(component)) {
-                        delegate.getStrings().add(component.getName());
-                    }
-                } else {
-                    if (ScrActionSupport.isHiddenComponent(component)) {
-                        // do nothing
-                    } else {
-                        // We aren't hidden so print it
-                        if (availableComponent(component)) {
-                            delegate.getStrings().add(component.getName());
-                        }
-                    }
+                if (availableComponent(component)) {
+                    delegate.getStrings().add(component.getName());
                 }
             }
         } catch (Exception e) {

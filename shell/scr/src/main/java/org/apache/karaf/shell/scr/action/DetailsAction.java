@@ -23,7 +23,11 @@ import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.scr.Component;
 import org.apache.felix.scr.Reference;
 import org.apache.felix.scr.ScrService;
-import org.apache.karaf.shell.scr.ScrCommandConstants;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.apache.karaf.shell.scr.ScrUtils;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
@@ -33,11 +37,18 @@ import org.osgi.service.component.ComponentConstants;
  * Displays the details associated with a given component by supplying its
  * component name.
  */
-@Command(
-         scope = ScrCommandConstants.SCR_COMMAND, 
-         name = ScrCommandConstants.DETAILS_FUNCTION, 
-         description = "Displays a list of available components")
-public class DetailsAction extends ScrActionSupport {
+@Command(scope = DetailsAction.SCOPE_VALUE, name = DetailsAction.FUNCTION_VALUE, description = DetailsAction.DESCRIPTION)
+@org.apache.felix.scr.annotations.Component(name = DetailsAction.ID, description = DetailsAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = DetailsAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = DetailsAction.FUNCTION_VALUE)
+})public class DetailsAction extends ScrActionSupport {
+
+    public static final String ID = "org.apache.karaf.shell.scr.details";
+    public static final String SCOPE_VALUE = "scr";
+    public static final String FUNCTION_VALUE =  "details";
+    public static final String DESCRIPTION = "Activates a Component for the given name.";
 
     @Argument(index = 0, name = "name", description = "The name of the Component to display the detials of", required = true, multiValued = false)
     String name;

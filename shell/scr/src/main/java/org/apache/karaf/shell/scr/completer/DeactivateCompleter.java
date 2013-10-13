@@ -17,8 +17,19 @@
 package org.apache.karaf.shell.scr.completer;
 
 import org.apache.felix.scr.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.Completer;
 
+@org.apache.felix.scr.annotations.Component(name = "org.apache.karaf.shell.scr.deactivate.components.completer", immediate = true)
+@Service(Completer.class)
+@Properties(
+        @Property(name = "completer.type", value = ActivateCompleter.COMPLETER_TYPE)
+)
 public class DeactivateCompleter extends ScrCompleterSupport {
+
+    public static final String COMPLETER_TYPE = "active.components.completer";
 
     /**
      * Overrides the super method noted below. See super documentation for

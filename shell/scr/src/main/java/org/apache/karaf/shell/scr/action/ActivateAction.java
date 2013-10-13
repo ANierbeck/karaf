@@ -20,16 +20,28 @@ import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.scr.Component;
 import org.apache.felix.scr.ScrService;
-import org.apache.karaf.shell.scr.ScrCommandConstants;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.apache.karaf.shell.scr.ScrUtils;
 
 /**
  * Activates the given component by supplying its component name.
  */
-@Command(scope = ScrCommandConstants.SCR_COMMAND, 
-         name = ScrCommandConstants.ACTIVATE_FUNCTION, 
-         description = "Activates a Component for the given name")
-public class ActivateAction extends ScrActionSupport {
+@Command(scope = ActivateAction.SCOPE_VALUE, name = ActivateAction.FUNCTION_VALUE, description = ActivateAction.DESCRIPTION)
+@org.apache.felix.scr.annotations.Component(name = ActivateAction.ID, description = ActivateAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ActivateAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ActivateAction.FUNCTION_VALUE)
+})public class ActivateAction extends ScrActionSupport {
+
+    public static final String ID = "org.apache.karaf.shell.scr.activate";
+    public static final String SCOPE_VALUE = "scr";
+    public static final String FUNCTION_VALUE =  "activate";
+    public static final String DESCRIPTION = "Activates a Component for the given name.";
 
     @Argument(index = 0, 
               name = "name", 

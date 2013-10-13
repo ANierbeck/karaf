@@ -20,15 +20,27 @@ import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.scr.Component;
 import org.apache.felix.scr.ScrService;
-import org.apache.karaf.shell.scr.ScrCommandConstants;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
 /**
  * Deactivates the given component by supplying its component name.
  */
-@Command(scope = ScrCommandConstants.SCR_COMMAND, 
-         name = ScrCommandConstants.DEACTIVATE_FUNCTION, 
-         description = "Deactivates a Component for the given name")
-public class DeactivateAction extends ScrActionSupport {
+@Command(scope = DeactivateAction.SCOPE_VALUE, name = DeactivateAction.FUNCTION_VALUE, description = DeactivateAction.DESCRIPTION)
+@org.apache.felix.scr.annotations.Component(name = DeactivateAction.ID, description = DeactivateAction.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = DeactivateAction.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = DeactivateAction.FUNCTION_VALUE)
+})public class DeactivateAction extends ScrActionSupport {
+
+    public static final String ID = "org.apache.karaf.shell.scr.deactivate";
+    public static final String SCOPE_VALUE = "scr";
+    public static final String FUNCTION_VALUE =  "deactivate";
+    public static final String DESCRIPTION = "Deactivates a Component for the given name.";
 
     @Argument(index = 0, 
               name = "name", 

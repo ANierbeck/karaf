@@ -22,6 +22,8 @@ import org.apache.felix.gogo.commands.Action;
 import org.apache.felix.gogo.commands.basic.AbstractCommand;
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.service.command.CommandSession;
 import org.apache.karaf.shell.console.CompletableFunction;
 import org.apache.karaf.shell.console.Completer;
@@ -37,6 +39,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 
 @Component(name = "org.apache.karaf.shell.console.action.base", componentAbstract = true)
+@Properties(
+        @Property(name = "shell.command", value = "true")
+)
 public abstract class ComponentAction extends AbstractCommand implements Action, CompletableFunction {
 
     public static final String SCOPE = "osgi.command.scope";

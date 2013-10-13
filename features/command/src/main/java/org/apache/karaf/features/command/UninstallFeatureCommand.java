@@ -69,9 +69,4 @@ public class UninstallFeatureCommand extends FeaturesCommandSupport {
     	    }
         }
     }
-
-    @Override
-    public List<Completer> getCompleters() {
-        return Arrays.asList(installedFeaturesCompleter);
-    }
 }
