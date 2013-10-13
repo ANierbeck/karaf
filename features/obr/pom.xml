@@ -60,6 +60,18 @@
             <artifactId>org.apache.felix.bundlerepository</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.scr.annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.karaf</groupId>
+            <artifactId>org.apache.karaf.util</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -87,9 +99,16 @@
                         <Import-Package>
                             *
                         </Import-Package>
-                        <Private-Package>org.apache.karaf.features.obr.internal</Private-Package>
+                        <Private-Package>
+                            org.apache.karaf.features.obr.internal,
+                            org.apache.karaf.util.config
+                        </Private-Package>
                     </instructions>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-scr-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

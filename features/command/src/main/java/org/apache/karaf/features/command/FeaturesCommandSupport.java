@@ -16,36 +16,24 @@
  */
 package org.apache.karaf.features.command;
 
-import java.net.URI;
-
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.karaf.features.FeaturesService;
-import org.apache.karaf.shell.console.OsgiCommandSupport;
-import org.osgi.framework.ServiceReference;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-public abstract class FeaturesCommandSupport extends OsgiCommandSupport {
+@Component(name = FeaturesCommandSupport.ID, componentAbstract = true)
+public abstract class FeaturesCommandSupport extends ComponentAction {
 
-    protected Object doExecute() throws Exception {
-        // Get repository admin service.
-        ServiceReference ref = getBundleContext().getServiceReference(FeaturesService.class.getName());
-        if (ref == null) {
-            System.out.println("FeaturesService service is unavailable.");
-            return null;
-        }
-        try {
-            FeaturesService admin = (FeaturesService) getBundleContext().getService(ref);
-            if (admin == null) {
-                System.out.println("FeaturesService service is unavailable.");
-                return null;
-            }
+    public static final String ID = "org.apache.karaf.features.command.base";
 
-            doExecute(admin);
-        }
-        finally {
-            getBundleContext().ungetService(ref);
-        }
+    @Reference
+    private FeaturesService featuresService;
+
+    public Object doExecute() throws Exception {
+            doExecute(featuresService);
         return null;
     }
 
-    protected abstract void doExecute(FeaturesService admin) throws Exception;
+    protected abstract void doExecute(FeaturesService featuresService) throws Exception;
 
 }

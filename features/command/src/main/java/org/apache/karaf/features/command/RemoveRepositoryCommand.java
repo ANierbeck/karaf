@@ -16,18 +16,43 @@
  */
 package org.apache.karaf.features.command;
 
-import java.net.URI;
-
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.features.FeaturesService;
 import org.apache.karaf.features.Repository;
+import org.apache.karaf.features.command.completers.FeatureRepositoryNameCompleter;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.Completer;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "features", name = "removeRepository", description = "Removes the specified repository features service.")
+import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
+
+@Command(scope = RemoveRepositoryCommand.SCOPE_VALUE, name = RemoveRepositoryCommand.FUNCTION_VALUE, description = RemoveRepositoryCommand.DESCRIPTION)
+@Component(name = RemoveRepositoryCommand.ID, description = RemoveRepositoryCommand.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = RemoveRepositoryCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = RemoveRepositoryCommand.FUNCTION_VALUE)
+})
 public class RemoveRepositoryCommand extends FeaturesCommandSupport {
+
+    public static final String ID = "org.apache.karaf.features.command.removerepository";
+    public static final String SCOPE_VALUE = "features";
+    public static final String FUNCTION_VALUE =  "removeRepository";
+    public static final String DESCRIPTION = "Removes the specified repository features service.";
 
     @Argument(index = 0, name = "repository", description = "Name of the repository to remove.", required = true, multiValued = false)
     private String repository;
+
+    @Reference(target = "(completer.type="+ FeatureRepositoryNameCompleter.COMPLETER_TYPE+")", bind = "bindCompleter", unbind = "unbindCompleter")
+    private Completer repositoryCompleter;
 
     protected void doExecute(FeaturesService admin) throws Exception {
     	URI uri = null;
@@ -43,5 +68,10 @@ public class RemoveRepositoryCommand extends FeaturesCommandSupport {
     	} else {
     		admin.removeRepository(uri);
     	}
+    }
+
+    @Override
+    public List<Completer> getCompleters() {
+        return Arrays.asList(repositoryCompleter);
     }
 }

@@ -19,11 +19,22 @@ package org.apache.karaf.features.command.completers;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.features.command.FeatureFinder;
 import org.apache.karaf.shell.console.Completer;
 import org.apache.karaf.shell.console.completer.StringsCompleter;
 
+@Component(name = "org.apache.karaf.command.completer." + FeatureRepoNameCompleter.COMPLETER_TYPE, immediate = true)
+@Service(Completer.class)
+@Properties(
+        @Property(name = "completer.type", value = FeatureRepoNameCompleter.COMPLETER_TYPE)
+)
 public class FeatureRepoNameCompleter implements Completer {
+
+    public static final String COMPLETER_TYPE = "features.repository.finder.name";
 
     FeatureFinder featureFinder;
 

@@ -16,22 +16,44 @@
  */
 package org.apache.karaf.features.command;
 
-import java.util.List;
-import java.util.Map;
-
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.features.BundleInfo;
 import org.apache.karaf.features.ConfigFileInfo;
 import org.apache.karaf.features.Feature;
 import org.apache.karaf.features.FeaturesService;
+import org.apache.karaf.features.command.completers.InstalledFeatureCompleter;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.Completer;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+import org.apache.karaf.shell.console.completer.NullCompleter;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Utility command to display info about features.
  */
-@Command(scope = "features", name = "info", description = "Shows information about selected feature.")
+@Command(scope = InfoFeatureCommand.SCOPE_VALUE, name = InfoFeatureCommand.FUNCTION_VALUE, description = InfoFeatureCommand.DESCRIPTION)
+@Component(name = InfoFeatureCommand.ID, description = InfoFeatureCommand.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = InfoFeatureCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = InfoFeatureCommand.FUNCTION_VALUE)
+})
 public class InfoFeatureCommand extends FeaturesCommandSupport {
+
+    public static final String ID = "org.apache.karaf.features.command.info";
+    public static final String SCOPE_VALUE = "features";
+    public static final String FUNCTION_VALUE = "info";
+    public static final String DESCRIPTION = "Shows information about selected feature.";
 
     @Argument(index = 0, name = "name", description = "The name of the feature", required = true, multiValued = false)
     private String name;
@@ -39,17 +61,22 @@ public class InfoFeatureCommand extends FeaturesCommandSupport {
     @Argument(index = 1, name = "version", description = "The version of the feature", required = false, multiValued = false)
     private String version;
 
-    @Option(name = "-c", aliases={"--configuration"}, description="Display configuration info", required = false, multiValued = false)
+    @Option(name = "-c", aliases = {"--configuration"}, description = "Display configuration info", required = false, multiValued = false)
     private boolean config;
 
-    @Option(name = "-d", aliases={"--dependency"}, description="Display dependencies info", required = false, multiValued = false)
+    @Option(name = "-d", aliases = {"--dependency"}, description = "Display dependencies info", required = false, multiValued = false)
     private boolean dependency;
 
-    @Option(name = "-b", aliases={"--bundle"}, description="Display bundles info", required = false, multiValued = false)
+    @Option(name = "-b", aliases = {"--bundle"}, description = "Display bundles info", required = false, multiValued = false)
     private boolean bundle;
 
-    @Option(name = "-t", aliases={"--tree"}, description="Display feature tree", required = false, multiValued = false)
+    @Option(name = "-t", aliases = {"--tree"}, description = "Display feature tree", required = false, multiValued = false)
     private boolean tree;
+
+    @Reference(target = "(completer.type=" + InstalledFeatureCompleter.COMPLETER_TYPE + ")", bind = "bindCompleter", unbind = "unbindCompleter")
+    private Completer installedFeaturesCompleter;
+
+    private final NullCompleter nullCompleter = new NullCompleter();
 
     protected void doExecute(FeaturesService admin) throws Exception {
         Feature feature = null;
@@ -74,9 +101,9 @@ public class InfoFeatureCommand extends FeaturesCommandSupport {
 
         System.out.println("Description of " + feature.getName() + " " + feature.getVersion() + " feature");
         System.out.println("----------------------------------------------------------------");
-        if(feature.getDetails() != null && feature.getDetails().length() >0) {
-           System.out.print(feature.getDetails());
-           System.out.println("----------------------------------------------------------------");
+        if (feature.getDetails() != null && feature.getDetails().length() > 0) {
+            System.out.print(feature.getDetails());
+            System.out.println("----------------------------------------------------------------");
         }
         if (config) {
             displayConfigInformation(feature);
@@ -114,7 +141,7 @@ public class InfoFeatureCommand extends FeaturesCommandSupport {
                 int startLevel = featureBundle.getStartLevel();
                 StringBuilder sb = new StringBuilder();
                 sb.append(" ").append(featureBundle.getLocation());
-                if(startLevel > 0) {
+                if (startLevel > 0) {
                     sb.append(" start-level=").append(startLevel);
                 }
                 System.out.println(sb.toString());
@@ -145,17 +172,17 @@ public class InfoFeatureCommand extends FeaturesCommandSupport {
             }
         }
     }
-    
+
     private void displayConfigFileInformation(Feature feature) {
-    	List<ConfigFileInfo> configurationFiles = feature.getConfigurationFiles();
-    	if (configurationFiles.isEmpty()) {
-    		System.out.println("Feature has no configuration files");
-    	} else {
-    		System.out.println("Feature configuration files: ");
-    		for (ConfigFileInfo configFileInfo : configurationFiles) {
-				System.out.println("  " + configFileInfo.getFinalname());
-			}
-    	}    	
+        List<ConfigFileInfo> configurationFiles = feature.getConfigurationFiles();
+        if (configurationFiles.isEmpty()) {
+            System.out.println("Feature has no configuration files");
+        } else {
+            System.out.println("Feature configuration files: ");
+            for (ConfigFileInfo configFileInfo : configurationFiles) {
+                System.out.println("  " + configFileInfo.getFinalname());
+            }
+        }
     }
 
 
@@ -174,7 +201,7 @@ public class InfoFeatureCommand extends FeaturesCommandSupport {
         if (bundle) {
             List<BundleInfo> bundles = resolved != null ? resolved.getBundles() : feature.getBundles();
             for (int i = 0, j = bundles.size(); i < j; i++) {
-                System.out.println(prefix + " " + (i+1 == j ? "\\" : "+") + " " + bundles.get(i).getLocation());
+                System.out.println(prefix + " " + (i + 1 == j ? "\\" : "+") + " " + bundles.get(i).getLocation());
             }
         }
         List<Feature> dependencies = resolved != null ? resolved.getDependencies() : feature.getDependencies();
@@ -183,7 +210,7 @@ public class InfoFeatureCommand extends FeaturesCommandSupport {
             if (toDisplay == null) {
                 toDisplay = dependencies.get(i);
             }
-            unresolved += displayFeatureTree(admin, toDisplay, level+1, i + 1 == j);
+            unresolved += displayFeatureTree(admin, toDisplay, level + 1, i + 1 == j);
         }
 
         return unresolved;
@@ -196,12 +223,15 @@ public class InfoFeatureCommand extends FeaturesCommandSupport {
     private static String repeat(String string, int times) {
         if (times <= 0) {
             return "";
+        } else if (times % 2 == 0) {
+            return repeat(string + string, times / 2);
+        } else {
+            return string + repeat(string + string, times / 2);
         }
-        else if (times % 2 == 0) {
-            return repeat(string+string, times/2);
-        }
-        else {
-           return string + repeat(string+string, times/2);
-        }
+    }
+
+    @Override
+    public List<Completer> getCompleters() {
+        return Arrays.asList(installedFeaturesCompleter, nullCompleter);
     }
 }

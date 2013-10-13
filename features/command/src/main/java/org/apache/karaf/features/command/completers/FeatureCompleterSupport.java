@@ -18,6 +18,8 @@ package org.apache.karaf.features.command.completers;
 
 import java.util.List;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.karaf.features.Feature;
 import org.apache.karaf.features.FeaturesService;
 import org.apache.karaf.shell.console.Completer;
@@ -26,11 +28,15 @@ import org.apache.karaf.shell.console.completer.StringsCompleter;
 /**
  * Base completer for feature commands.
  */
+@Component(name = FeatureCompleterSupport.ID, componentAbstract = true)
 public abstract class FeatureCompleterSupport implements Completer {
+
+    public static final String ID = "org.apache.karaf.features.command.completer.base";
 
     /**
      * Feature service.
      */
+    @Reference
     protected FeaturesService featuresService;
 
     public void setFeaturesService(FeaturesService featuresService) {

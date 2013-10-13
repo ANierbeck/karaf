@@ -21,13 +21,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.features.FeaturesService;
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.karaf.shell.console.CompletableFunction;
 import org.apache.karaf.shell.console.MultiException;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "features", name = "addUrl", description = "Adds a list of repository URLs to the features service")
+@Command(scope = AddUrlCommand.SCOPE_VALUE, name = AddUrlCommand.FUNCTION_VALUE, description = AddUrlCommand.DESCRIPTION)
+@Component(name = AddUrlCommand.ID, description = AddUrlCommand.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = AddUrlCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = AddUrlCommand.FUNCTION_VALUE)
+})
 public class AddUrlCommand extends FeaturesCommandSupport {
+
+    public static final String ID = "org.apache.karaf.features.command.addurl";
+    public static final String SCOPE_VALUE = "features";
+    public static final String FUNCTION_VALUE =  "addUrl";
+    public static final String DESCRIPTION = "Adds a list of repository URLs to the features service.";
+
 
     @Argument(index = 0, name = "urls", description = "One or more repository URLs separated by whitespaces", required = true, multiValued = true)
     List<String> urls;

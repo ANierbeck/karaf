@@ -22,12 +22,21 @@ import java.util.List;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.karaf.features.Feature;
 import org.apache.karaf.features.FeaturesService;
 import org.apache.karaf.features.Repository;
+import org.apache.karaf.features.command.completers.AllFeatureCompleter;
+import org.apache.karaf.features.command.completers.AvailableFeatureCompleter;
+import org.apache.karaf.shell.console.Completer;
 
 @Command(scope = "features", name = "listVersions", description = "Lists all versions of a feature available from the currently available repositories.")
 public class ListFeatureVersionsCommand extends FeaturesCommandSupport {
+
+    public static final String ID = "org.apache.karaf.features.command.listversions";
+    public static final String SCOPE_VALUE = "features";
+    public static final String FUNCTION_VALUE =  "listVersions";
+    public static final String DESCRIPTION = "Lists all versions of a feature available from the currently available repositories.";
 
 	@Argument(index = 0, name = "feature", description = "Name of feature.", required = true, multiValued = false)
 	String feature;
@@ -40,6 +49,9 @@ public class ListFeatureVersionsCommand extends FeaturesCommandSupport {
     	public String version;
     	public Repository repository;
     }
+
+    @Reference(target = "(completer.type="+ AllFeatureCompleter.COMPLETER_TYPE+")")
+    private Completer allFeaturesCompleter;
     
     protected void doExecute(FeaturesService admin) throws Exception {
 
@@ -112,5 +124,11 @@ public class ListFeatureVersionsCommand extends FeaturesCommandSupport {
         }
 
     }
+
+    @Override
+    public List<Completer> getCompleters() {
+        return Arrays.asList(allFeaturesCompleter);
+    }
+
 
 }

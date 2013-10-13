@@ -16,21 +16,36 @@
  */
 package org.apache.karaf.features.command;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.features.FeaturesService;
 import org.apache.karaf.features.Repository;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "features", name = "listRepositories", description = "Displays a list of all defined repositories.")
+@Command(scope = ListRepositoriesCommand.SCOPE_VALUE, name = ListRepositoriesCommand.FUNCTION_VALUE, description = ListRepositoriesCommand.DESCRIPTION)
+@Component(name = ListRepositoriesCommand.ID, description = ListRepositoriesCommand.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ListRepositoriesCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ListRepositoriesCommand.FUNCTION_VALUE)
+})
 public class ListRepositoriesCommand extends FeaturesCommandSupport {
+
+    public static final String ID = "org.apache.karaf.features.command.listrepositories";
+    public static final String SCOPE_VALUE = "features";
+    public static final String FUNCTION_VALUE =  "listRepositories";
+    public static final String DESCRIPTION = "Displays a list of all defined repositories.";
 
 	private static final String REPOSITORY = "Repository";
 	private static final String REPOSITORY_URL = "Repository URL";
 
 	@Option(name = "-u", description = "Display repository URLs.", required = false, multiValued = false)
     boolean showUrl;
-
-    
 	
     protected void doExecute(FeaturesService admin) throws Exception {
     	

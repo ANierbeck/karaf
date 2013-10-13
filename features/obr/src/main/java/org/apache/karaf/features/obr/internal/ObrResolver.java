@@ -32,16 +32,54 @@ import org.apache.felix.bundlerepository.Repository;
 import org.apache.felix.bundlerepository.RepositoryAdmin;
 import org.apache.felix.bundlerepository.Requirement;
 import org.apache.felix.bundlerepository.Resource;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.ConfigurationPolicy;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.features.BundleInfo;
 import org.apache.karaf.features.Feature;
 import org.apache.karaf.features.Resolver;
 
+import static org.apache.karaf.util.config.ConfigUtils.*;
+
+@Component(name = "org.apache.karaf.features.obr", policy = ConfigurationPolicy.OPTIONAL)
+@Service(Resolver.class)
+@Properties(
+        @Property(name = "name", value = "obr")
+)
 public class ObrResolver implements Resolver {
 
+    private static final String START_LELVEL="startLevel";
+    private static final String RESOLVE_OPTIONAL_IMPORTS = "resolveOptionalImports";
+    private static final String START_BY_DEFAULT="startByDefault";
+
+    @Reference
     private RepositoryAdmin repositoryAdmin;
+
+    @Property(name = RESOLVE_OPTIONAL_IMPORTS, boolValue = false)
     private boolean resolveOptionalImports;
+
+    @Property(name = START_BY_DEFAULT, boolValue = false)
     private boolean startByDefault;
+
+    @Property(name = START_LELVEL, intValue = 80)
     private int startLevel;
+
+    @Activate
+    void actiave(Map<String, ?> properties) {
+        startLevel = readInt(properties, START_LELVEL);
+        startByDefault = readBoolean(properties, START_BY_DEFAULT);
+        resolveOptionalImports = readBoolean(properties, RESOLVE_OPTIONAL_IMPORTS);
+    }
+
+    @Deactivate
+    void deactivate() {
+
+    }
 
     public RepositoryAdmin getRepositoryAdmin() {
         return repositoryAdmin;

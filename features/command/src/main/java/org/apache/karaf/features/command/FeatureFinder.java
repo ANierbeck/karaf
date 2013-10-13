@@ -22,11 +22,22 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.ConfigurationPolicy;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Modified;
+import org.apache.felix.scr.annotations.Service;
 import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.cm.ManagedService;
 
-public class FeatureFinder implements ManagedService {
-    Map<String, String> nameToArtifactMap = new HashMap<String, String>();
+@Component(name = "org.apache.karaf.features.repos", policy = ConfigurationPolicy.REQUIRE)
+@Service(FeatureFinder.class)
+public class FeatureFinder  {
+
+    private final Map<String, String> nameToArtifactMap = new HashMap<String, String>();
+
     public String[] getNames() {
         return nameToArtifactMap.keySet().toArray(new String[] {});
     }
@@ -40,18 +51,29 @@ public class FeatureFinder implements ManagedService {
         return artifact.getPaxUrlForArtifact(version);
     }
 
-    @SuppressWarnings("rawtypes")
-    public void updated(Dictionary properties) throws ConfigurationException {
-        if (properties != null) {
-            nameToArtifactMap.clear();
-            Enumeration keys = properties.keys();
-            while (keys.hasMoreElements()) {
-                String key = (String)keys.nextElement();
-                if (!"felix.fileinstall.filename".equals(key) && !"service.pid".equals(key)) {
-                    nameToArtifactMap.put(key, (String)properties.get(key));
-                }
+    @Activate
+    void activate(Map<String, ?> properties) {
+        doUpdate(properties);
+    }
+
+    @Modified
+    void modified(Map<String, ?> properties) {
+        doUpdate(properties);
+    }
+
+    @Deactivate
+    void deactivate() {
+        nameToArtifactMap.clear();
+    }
+
+    private void doUpdate(Map<String, ?> properties)  {
+        nameToArtifactMap.clear();
+        for (Map.Entry<String, ?> entry : properties.entrySet()) {
+            String key = entry.getKey();
+            String value = String.valueOf(entry.getValue());
+            if (!"felix.fileinstall.filename".equals(key) && !"service.pid".equals(key)) {
+                nameToArtifactMap.put(key, value);
             }
         }
     }
-
 }

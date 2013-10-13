@@ -18,19 +18,44 @@ package org.apache.karaf.features.command;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.features.FeaturesService;
 import org.apache.karaf.features.Repository;
+import org.apache.karaf.features.command.completers.FeatureRepositoryCompleter;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.Completer;
 import org.apache.karaf.shell.console.MultiException;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
-@Command(scope = "features", name = "refreshUrl", description = "Reloads the list of available features from the repositories.")
+@Command(scope = RefreshUrlCommand.SCOPE_VALUE, name = RefreshUrlCommand.FUNCTION_VALUE, description = RefreshUrlCommand.DESCRIPTION)
+@Component(name = RefreshUrlCommand.ID, description = RefreshUrlCommand.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = RefreshUrlCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = RefreshUrlCommand.FUNCTION_VALUE)
+})
 public class RefreshUrlCommand extends FeaturesCommandSupport {
+
+    public static final String ID = "org.apache.karaf.features.command.refreshurl";
+    public static final String SCOPE_VALUE = "features";
+    public static final String FUNCTION_VALUE =  "refreshUrl";
+    public static final String DESCRIPTION = "Reloads the list of available features from the repositories.";
 
     @Argument(index = 0, name = "urls", description = "Repository URLs to reload (leave empty for all)", required = false, multiValued = true)
     List<String> urls;
+
+    @Reference(target = "(completer.type="+ FeatureRepositoryCompleter.COMPLETER_TYPE+")", bind = "bindCompleter", unbind = "unbindCompleter")
+    private Completer repositoryUrlCompleter;
+
 
     protected void doExecute(FeaturesService admin) throws Exception {
         if (urls == null || urls.isEmpty()) {
@@ -52,5 +77,10 @@ public class RefreshUrlCommand extends FeaturesCommandSupport {
             }
         }
         MultiException.throwIf("Unable to add repositories", exceptions);
+    }
+
+    @Override
+    public List<Completer> getCompleters() {
+        return Arrays.asList(repositoryUrlCompleter);
     }
 }

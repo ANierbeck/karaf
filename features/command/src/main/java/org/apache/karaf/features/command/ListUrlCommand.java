@@ -20,15 +20,32 @@ import java.net.URI;
 
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.features.FeaturesService;
 import org.apache.karaf.features.Repository;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
 /**
  * Command which lists feature URLs.
  * 
  */
-@Command(scope = "features", name = "listUrl", description = "Displays a list of all defined repository URLs.")
+@Command(scope = ListUrlCommand.SCOPE_VALUE, name = ListUrlCommand.FUNCTION_VALUE, description = ListUrlCommand.DESCRIPTION)
+@Component(name = ListUrlCommand.ID, description = ListUrlCommand.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ListUrlCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ListUrlCommand.FUNCTION_VALUE)
+})
 public class ListUrlCommand extends FeaturesCommandSupport {
+
+    public static final String ID = "org.apache.karaf.features.command.listurl";
+    public static final String SCOPE_VALUE = "features";
+    public static final String FUNCTION_VALUE =  "listUrl";
+    public static final String DESCRIPTION = "Displays a list of all defined repository URLs.";
 
     @Option(name = "-v", aliases = "-validate", description = "Validate current version of descriptors", required = false, multiValued = false)
     boolean validation = false;

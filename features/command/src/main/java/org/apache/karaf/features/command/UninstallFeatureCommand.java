@@ -18,15 +18,40 @@ package org.apache.karaf.features.command;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.features.FeaturesService;
+import org.apache.karaf.features.command.completers.InstalledFeatureCompleter;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.Completer;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
+import java.util.Arrays;
 import java.util.List;
 
-@Command(scope = "features", name = "uninstall", description = "Uninstalls a feature with the specified name and version.")
+@Command(scope = UninstallFeatureCommand.SCOPE_VALUE, name = UninstallFeatureCommand.FUNCTION_VALUE, description = UninstallFeatureCommand.DESCRIPTION)
+@Component(name = UninstallFeatureCommand.ID, description = UninstallFeatureCommand.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = UninstallFeatureCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = UninstallFeatureCommand.FUNCTION_VALUE)
+})
 public class UninstallFeatureCommand extends FeaturesCommandSupport {
+
+    public static final String ID = "org.apache.karaf.features.command.uninstall";
+    public static final String SCOPE_VALUE = "features";
+    public static final String FUNCTION_VALUE =  "uninstall";
+    public static final String DESCRIPTION = "Uninstalls a feature with the specified name and version.";
 
     @Argument(index = 0, name = "features", description = "The name and version of the features to uninstall. A feature id looks like name/version. The version is optional.", required = true, multiValued = true)
     List<String> features;
+
+    @Reference(target = "(completer.type="+ InstalledFeatureCompleter.COMPLETER_TYPE+")", bind = "bindCompleter", unbind = "unbindCompleter")
+    private Completer installedFeaturesCompleter;
+
 
     protected void doExecute(FeaturesService admin) throws Exception {
         // iterate in the provided feature
@@ -43,5 +68,10 @@ public class UninstallFeatureCommand extends FeaturesCommandSupport {
     		    admin.uninstallFeature(name );
     	    }
         }
+    }
+
+    @Override
+    public List<Completer> getCompleters() {
+        return Arrays.asList(installedFeaturesCompleter);
     }
 }

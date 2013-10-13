@@ -13,16 +13,11 @@
  */
 package org.apache.karaf.features.management.internal;
 
-import java.net.URI;
-import java.util.*;
-import javax.management.MBeanNotificationInfo;
-import javax.management.MBeanRegistration;
-import javax.management.MBeanServer;
-import javax.management.NotCompliantMBeanException;
-import javax.management.Notification;
-import javax.management.ObjectName;
-import javax.management.openmbean.TabularData;
-
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.features.Feature;
 import org.apache.karaf.features.FeatureEvent;
 import org.apache.karaf.features.FeaturesListener;
@@ -34,61 +29,51 @@ import org.apache.karaf.features.management.codec.JmxFeature;
 import org.apache.karaf.features.management.codec.JmxFeatureEvent;
 import org.apache.karaf.features.management.codec.JmxRepository;
 import org.apache.karaf.features.management.codec.JmxRepositoryEvent;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
+
+import javax.management.MBeanNotificationInfo;
+import javax.management.MBeanServer;
+import javax.management.NotCompliantMBeanException;
+import javax.management.Notification;
+import javax.management.ObjectName;
+import javax.management.openmbean.TabularData;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.List;
 
 /**
  * Implementation of {@link FeaturesServiceMBean}.
  */
-public class FeaturesServiceMBeanImpl extends StandardEmitterMBean implements
-    MBeanRegistration, FeaturesServiceMBean {
+@Component(name = "org.apache.karaf.features.mbeans.config", immediate = true)
+@Service(FeaturesListener.class)
+public class FeaturesServiceMBeanImpl extends StandardEmitterMBean implements FeaturesServiceMBean, FeaturesListener {
 
-    private ServiceRegistration registration;
-
-    private BundleContext bundleContext;
-
+    private static final String OBJECT_NAME = "org.apache.karaf:type=features,name=" + System.getProperty("karaf.name");
 	private ObjectName objectName;
 
 	private volatile long sequenceNumber = 0;
 
+    @Reference
 	private MBeanServer server;
 
+    @Reference
     private FeaturesService featuresService;
 
     public FeaturesServiceMBeanImpl() throws NotCompliantMBeanException {
         super(FeaturesServiceMBean.class);
     }
 
-    public ObjectName preRegister(MBeanServer server, ObjectName name) throws Exception {
-        objectName = name;
-        this.server = server;
-        return name;
+    @Activate
+    public void activate() throws Exception {
+        this.objectName = new ObjectName(OBJECT_NAME);
+        server.registerMBean(this, objectName) ;
     }
 
-    public void postRegister(Boolean registrationDone) {
-        registerService();
-    }
-
-    public void preDeregister() {
-        unregisterService();
-    }
-
-    public void postDeregister() {
-    }
-
-    public void registerService() {
-        unregisterService();
-        registration = bundleContext.registerService(FeaturesListener.class.getName(),
-                getFeaturesListener(), new Hashtable());
-    }
-
-    public void unregisterService() {
-        if (registration != null) {
-            try {
-                registration.unregister();
-            } finally {
-                registration = null;
-            }
+    @Deactivate
+    public void deactivate() throws Exception {
+        if (objectName != null) {
+            server.unregisterMBean(objectName);
         }
     }
 
@@ -187,40 +172,34 @@ public class FeaturesServiceMBeanImpl extends StandardEmitterMBean implements
         featuresService.uninstallFeature(name, version);
     }
 
-    public void setBundleContext(BundleContext bundleContext) {
-        this.bundleContext = bundleContext;
-    }
-
     public void setFeaturesService(FeaturesService featuresService) {
         this.featuresService = featuresService;
     }
 
-    public FeaturesListener getFeaturesListener() {
-        return new FeaturesListener() {
-            public void featureEvent(FeatureEvent event) {
-                if (!event.isReplay()) {
-                    Notification notification = new Notification(FEATURE_EVENT_TYPE, objectName, sequenceNumber++);
-                    notification.setUserData(new JmxFeatureEvent(event).asCompositeData());
-                    sendNotification(notification);
-                }
-            }
-            public void repositoryEvent(RepositoryEvent event) {
-                if (!event.isReplay()) {
-                    Notification notification = new Notification(REPOSITORY_EVENT_TYPE, objectName, sequenceNumber++);
-                    notification.setUserData(new JmxRepositoryEvent(event).asCompositeData());
-                    sendNotification(notification);
-                }
-            }
-            
-            public boolean equals(Object o) {
-            	if (this == o) {
-            		return true;
-            	}
-            	return o.equals(this);
-              }
 
-        };
+    public void featureEvent(FeatureEvent event) {
+        if (!event.isReplay()) {
+            Notification notification = new Notification(FEATURE_EVENT_TYPE, objectName, sequenceNumber++);
+            notification.setUserData(new JmxFeatureEvent(event).asCompositeData());
+            sendNotification(notification);
+        }
     }
+
+    public void repositoryEvent(RepositoryEvent event) {
+        if (!event.isReplay()) {
+            Notification notification = new Notification(REPOSITORY_EVENT_TYPE, objectName, sequenceNumber++);
+            notification.setUserData(new JmxRepositoryEvent(event).asCompositeData());
+            sendNotification(notification);
+        }
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        return o.equals(this);
+    }
+
 
     public MBeanNotificationInfo[] getNotificationInfo() {
         return getBroadcastInfo();

@@ -16,16 +16,38 @@
  */
 package org.apache.karaf.features.command;
 
+import org.apache.felix.gogo.commands.Action;
+import org.apache.felix.gogo.commands.Argument;
+import org.apache.felix.gogo.commands.Command;
+import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.features.FeaturesService;
+import org.apache.karaf.features.command.completers.AvailableFeatureCompleter;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.Completer;
+import org.apache.karaf.shell.console.commands.ComponentAction;
+
 import java.util.EnumSet;
 import java.util.List;
 
-import org.apache.felix.gogo.commands.Option;
-import org.apache.karaf.features.FeaturesService;
-import org.apache.felix.gogo.commands.Argument;
-import org.apache.felix.gogo.commands.Command;
-
-@Command(scope = "features", name = "install", description = "Installs a feature with the specified name and version.")
+@Command(scope = InstallFeatureCommand.SCOPE_VALUE, name = InstallFeatureCommand.FUNCTION_VALUE, description = InstallFeatureCommand.DESCRIPTION)
+@Component(name = InstallFeatureCommand.ID, description = InstallFeatureCommand.DESCRIPTION, immediate = true)
+@Service({Action.class, CompletableFunction.class})
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = InstallFeatureCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = InstallFeatureCommand.FUNCTION_VALUE)
+})
 public class InstallFeatureCommand extends FeaturesCommandSupport {
+
+    public static final String ID = "org.apache.karaf.features.command.install";
+    public static final String SCOPE_VALUE = "features";
+    public static final String FUNCTION_VALUE =  "install";
+    public static final String DESCRIPTION = "Installs a feature with the specified name and version.";
 
     private static String DEFAULT_VERSION = "0.0.0";
 
@@ -37,6 +59,10 @@ public class InstallFeatureCommand extends FeaturesCommandSupport {
     boolean noRefresh;
     @Option(name = "-v", aliases = "--verbose", description = "Explain what is being done", required = false, multiValued = false)
     boolean verbose;
+
+
+    @Reference(target = "(completer.type="+ AvailableFeatureCompleter.COMPLETER_TYPE+")", bind = "bindCompleter", unbind = "unbindCompleter")
+    private Completer availableFeaturesCompleter;
 
     protected void doExecute(FeaturesService admin) throws Exception {
         for (String feature : features) {

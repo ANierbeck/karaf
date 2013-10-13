@@ -18,6 +18,10 @@ package org.apache.karaf.features.command.completers;
 
 import java.util.List;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.features.FeaturesService;
 import org.apache.karaf.features.Repository;
 import org.apache.karaf.shell.console.Completer;
@@ -30,7 +34,14 @@ import org.apache.karaf.shell.console.completer.StringsCompleter;
  *
  */
 
+@Component(name = "org.apache.karaf.command.completer." + FeatureRepositoryNameCompleter.COMPLETER_TYPE, immediate = true)
+@Service(Completer.class)
+@Properties(
+        @Property(name = "completer.type", value = AllFeatureCompleter.COMPLETER_TYPE)
+)
 public class FeatureRepositoryNameCompleter implements Completer {
+
+    public static final String COMPLETER_TYPE = "features.repository.name";
 
     private FeaturesService featuresService;
 

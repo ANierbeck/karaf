@@ -18,9 +18,15 @@ package org.apache.karaf.features.command;
 
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.features.Feature;
 import org.apache.karaf.features.FeaturesService;
 import org.apache.karaf.features.Repository;
+import org.apache.karaf.shell.console.CompletableFunction;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,8 +34,19 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-@Command(scope = "features", name = "list", description = "Lists all existing features available from the defined repositories.")
+@Command(scope = ListFeaturesCommand.SCOPE_VALUE, name = ListFeaturesCommand.FUNCTION_VALUE, description = ListFeaturesCommand.DESCRIPTION)
+@Component(name = ListFeaturesCommand.ID, description = ListFeaturesCommand.DESCRIPTION)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = ListFeaturesCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = ListFeaturesCommand.FUNCTION_VALUE)
+})
 public class ListFeaturesCommand extends FeaturesCommandSupport {
+
+    public static final String ID = "org.apache.karaf.features.command.list";
+    public static final String SCOPE_VALUE = "features";
+    public static final String FUNCTION_VALUE =  "list";
+    public static final String DESCRIPTION = "Lists all existing features available from the defined repositories.";
 
     @Option(name = "-i", aliases = {"--installed"}, description = "Display a list of all installed features only", required = false, multiValued = false)
     boolean installed;
@@ -43,7 +60,7 @@ public class ListFeaturesCommand extends FeaturesCommandSupport {
     private static final String VERSION = "Version";
     private static final String NAME = "Name";
     private static final String REPOSITORY = "Repository";
-    private static final String DESCRIPTION = "Description";
+    private static final String DESCR = "Description";
 
     protected void doExecute(FeaturesService admin) throws Exception {
 
@@ -96,7 +113,7 @@ public class ListFeaturesCommand extends FeaturesCommandSupport {
         for (int i = REPOSITORY.length(); i < maxRepositorySize; i++) {
             sb.append(" ");
         }
-        sb.append(DESCRIPTION);
+        sb.append(DESCR);
         System.out.println(sb.toString());
 
         // Print the feature data.

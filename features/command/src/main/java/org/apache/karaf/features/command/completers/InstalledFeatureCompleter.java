@@ -16,12 +16,24 @@
  */
 package org.apache.karaf.features.command.completers;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.features.Feature;
+import org.apache.karaf.shell.console.Completer;
 
 /**
  * {@link jline.Completor} for installed features.
  */
+@Component(name = "org.apache.karaf.command.completer." + InstalledFeatureCompleter.COMPLETER_TYPE, immediate = true)
+@Service(Completer.class)
+@Properties(
+        @Property(name = "completer.type", value = InstalledFeatureCompleter.COMPLETER_TYPE)
+)
 public class InstalledFeatureCompleter extends FeatureCompleterSupport {
+
+    public static final String COMPLETER_TYPE = "features.installed";
 
     @Override
     protected boolean acceptsFeature(Feature feature) {
