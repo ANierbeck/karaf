@@ -15,10 +15,18 @@ package org.apache.karaf.diagnostic.management.internal;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 import javax.management.StandardMBean;
 
+import org.apache.felix.scr.annotations.Activate;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.ReferenceCardinality;
+import org.apache.felix.scr.annotations.ReferencePolicy;
 import org.apache.karaf.diagnostic.core.DumpDestination;
 import org.apache.karaf.diagnostic.core.DumpProvider;
 import org.apache.karaf.diagnostic.core.common.DirectoryDumpDestination;
@@ -28,13 +36,36 @@ import org.apache.karaf.diagnostic.management.DiagnosticDumpMBean;
 /**
  * Implementation of diagnostic mbean.
  */
+@Component(name = "org.apache.karaf.diagonistic.mbeans.config", immediate = true)
 public class DiagnosticDumpMBeanImpl extends StandardMBean implements 
     DiagnosticDumpMBean {
 
+    private static final String OBJECT_NAME = "org.apache.karaf:type=diagnostic,name=" + System.getProperty("karaf.name");
+    private ObjectName objectName;
+
+    @Reference
+    private javax.management.MBeanServer server;
+
+    @Activate
+    public void activate() throws Exception {
+        this.objectName = new ObjectName(OBJECT_NAME);
+        server.registerMBean(this, objectName) ;
+    }
+
+    @Deactivate
+    public void deactivate() throws Exception {
+        if (objectName != null) {
+            server.unregisterMBean(objectName);
+        }
+    }
+
     /**
-     * Dump providers.
+     * Registered dump providers.
      */
-    private List<DumpProvider> providers;
+    @Reference(referenceInterface = DumpProvider.class, cardinality = ReferenceCardinality.OPTIONAL_MULTIPLE, policy = ReferencePolicy.DYNAMIC,
+            bind = "bindProvider", unbind = "unbindProvider"
+    )
+    private final List<DumpProvider> providers = new CopyOnWriteArrayList<DumpProvider>();
 
     /**
      * Creates new diagnostic mbean.
@@ -74,13 +105,12 @@ public class DiagnosticDumpMBeanImpl extends StandardMBean implements
         destination.save();
     }
 
-    /**
-     * Sets dump providers.
-     * 
-     * @param providers Dump providers. 
-     */
-    public void setProviders(List<DumpProvider> providers) {
-        this.providers = providers;
+    void bindProvider(DumpProvider providers) {
+        this.providers.add(providers);
+    }
+
+    void unbindProvider(DumpProvider provider) {
+        this.providers.remove(provider);
     }
 
 }

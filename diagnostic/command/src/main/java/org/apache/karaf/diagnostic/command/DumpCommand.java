@@ -21,26 +21,43 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.felix.gogo.commands.Argument;
 import org.apache.felix.gogo.commands.Command;
 import org.apache.felix.gogo.commands.Option;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.ReferenceCardinality;
+import org.apache.felix.scr.annotations.ReferencePolicy;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.diagnostic.core.DumpDestination;
 import org.apache.karaf.diagnostic.core.DumpProvider;
 import org.apache.karaf.diagnostic.core.common.DirectoryDumpDestination;
 import org.apache.karaf.diagnostic.core.common.ZipDumpDestination;
+import org.apache.karaf.shell.console.CompletableFunction;
 import org.apache.karaf.shell.console.OsgiCommandSupport;
+import org.apache.karaf.shell.console.commands.ComponentAction;
 
 /**
  * Command to create dump from shell.
  */
-@Command(scope = "dev", name = "create-dump", description = "Creates zip archive with diagnostic info.")
-public class DumpCommand extends OsgiCommandSupport {
+@Command(scope = DumpCommand.SCOPE_VALUE, name = DumpCommand.FUNCTION_VALUE, description = DumpCommand.DESCRIPTION)
+@Component(name = DumpCommand.ID, description = DumpCommand.DESCRIPTION, immediate = true)
+@Service(CompletableFunction.class)
+@Properties({
+        @Property(name = ComponentAction.SCOPE, value = DumpCommand.SCOPE_VALUE),
+        @Property(name = ComponentAction.FUNCTION, value = DumpCommand.FUNCTION_VALUE)
+})
+public class DumpCommand extends ComponentAction {
 
-    /**
-     * Registered dump providers.
-     */
-    private List<DumpProvider> providers = new LinkedList<DumpProvider>();
+
+    public static final String ID = "org.apache.karaf.diagnostic.command.createdump";
+    public static final String SCOPE_VALUE = "dev";
+    public static final String FUNCTION_VALUE =  "dump";
+    public static final String DESCRIPTION = "Creates zip archive with diagnostic info.";
 
     /**
      * Output format of the filename if not defined otherwise
@@ -59,12 +76,21 @@ public class DumpCommand extends OsgiCommandSupport {
     @Argument(name = "name", description = "Name of created zip or directory", required = false)
     String fileName;
 
+
+    /**
+     * Registered dump providers.
+     */
+    @Reference(referenceInterface = DumpProvider.class, cardinality = ReferenceCardinality.OPTIONAL_MULTIPLE, policy = ReferencePolicy.DYNAMIC,
+            bind = "bindProvider", unbind = "unbindProvider"
+    )
+    private final List<DumpProvider> providers = new CopyOnWriteArrayList<DumpProvider>();
+
     @Override
-    protected Object doExecute() throws Exception {
+    public Object doExecute() throws Exception {
         DumpDestination destination;
 
         if (providers.isEmpty()) {
-            session.getConsole().println("Unable to create dump. No providers were found");
+            getSession().getConsole().println("Unable to create dump. No providers were found");
             return null;
         }
 
@@ -88,17 +114,16 @@ public class DumpCommand extends OsgiCommandSupport {
             provider.createDump(destination);
         }
         destination.save();
-        session.getConsole().println("Diagnostic dump created.");
+        getSession().getConsole().println("Diagnostic dump created.");
 
         return null;
     }
 
-    /**
-     * Sets dump providers to use.
-     * 
-     * @param providers Providers.
-     */
-    public void setProviders(List<DumpProvider> providers) {
-        this.providers = providers;
+    void bindProvider(DumpProvider providers) {
+        this.providers.add(providers);
+    }
+
+    void unbindProvider(DumpProvider provider) {
+        this.providers.remove(provider);
     }
 }

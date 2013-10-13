@@ -49,6 +49,11 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.scr.annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.karaf.diagnostic</groupId>
             <artifactId>org.apache.karaf.diagnostic.core</artifactId>
         </dependency>
@@ -93,6 +98,10 @@
                         <_versionpolicy>${bnd.version.policy}</_versionpolicy>
                     </instructions>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-scr-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

@@ -20,14 +20,20 @@ import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.diagnostic.core.DumpProvider;
 import org.apache.karaf.diagnostic.core.common.TextDumpProvider;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
 
 /**
  * Dump provider which produces file named bundles.txt with list of
  * installed bundles and it's state.
  */
+@Component(name = "org.apache.karaf.diagnostic.dump.provider.bundle")
+@Service(DumpProvider.class)
 public class BundleDumpProvider extends TextDumpProvider {
 
     /**
@@ -51,6 +57,11 @@ public class BundleDumpProvider extends TextDumpProvider {
      * Bundle context.
      */
     private BundleContext bundleContext;
+
+    @Activate
+    void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
+    }
 
     /**
      * Creates new bundle information file.

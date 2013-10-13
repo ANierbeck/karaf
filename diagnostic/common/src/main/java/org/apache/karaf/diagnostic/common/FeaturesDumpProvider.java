@@ -17,6 +17,10 @@ package org.apache.karaf.diagnostic.common;
 
 import java.io.OutputStreamWriter;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.diagnostic.core.DumpProvider;
 import org.apache.karaf.diagnostic.core.common.TextDumpProvider;
 import org.apache.karaf.features.BundleInfo;
 import org.apache.karaf.features.Feature;
@@ -27,11 +31,14 @@ import org.apache.karaf.features.Repository;
  * Dump provider which add file named features.txt with informations
  * about installed features and repositories.
  */
+@Component(name = "org.apache.karaf.diagnostic.dump.provider.features")
+@Service(DumpProvider.class)
 public class FeaturesDumpProvider extends TextDumpProvider {
 
     /**
      * Feature service.
      */
+    @Reference
     private final FeaturesService features;
 
     /**

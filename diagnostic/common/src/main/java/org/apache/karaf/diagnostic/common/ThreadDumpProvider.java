@@ -22,11 +22,16 @@ import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.diagnostic.core.DumpProvider;
 import org.apache.karaf.diagnostic.core.common.TextDumpProvider;
 
 /**
  * Provider which dumps thread info to file named threads.txt.
  */
+@Component(name = "org.apache.karaf.diagnostic.dump.provider.thread")
+@Service(DumpProvider.class)
 public class ThreadDumpProvider extends TextDumpProvider {
 
     /**

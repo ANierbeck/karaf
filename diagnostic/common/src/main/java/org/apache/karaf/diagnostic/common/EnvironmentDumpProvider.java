@@ -36,26 +36,33 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Service;
+import org.apache.karaf.diagnostic.core.DumpProvider;
 import org.apache.karaf.diagnostic.core.common.TextDumpProvider;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
+import org.osgi.service.component.annotations.Activate;
 
 /**
  * Provider which dumps runtime environment information to file named environment.txt.
  */
+@Component(name = "org.apache.karaf.diagnostic.dump.provider.env")
+@Service(DumpProvider.class)
 public class EnvironmentDumpProvider extends TextDumpProvider {
     
     private static final String KEY_VALUE_FORMAT = "%1$s\t: %2$s";
     private static final String INDENT_KEY_VALUE_FORMAT = "    "+KEY_VALUE_FORMAT;
-    private final BundleContext bundleContext;
+    private BundleContext bundleContext;
 
-    /**
-     * Creates new dump entry which contains information about the runtime environment.
-     */
-    public EnvironmentDumpProvider(final BundleContext context) {
+    protected EnvironmentDumpProvider() {
         super("environment.txt");
-        this.bundleContext = context;
+    }
+
+    @Activate
+    void activate(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
     }
 
     @Override

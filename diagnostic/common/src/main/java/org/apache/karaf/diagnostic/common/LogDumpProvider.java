@@ -23,25 +23,30 @@ import java.io.OutputStream;
 import java.util.Dictionary;
 import java.util.Enumeration;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.karaf.diagnostic.core.DumpDestination;
 import org.apache.karaf.diagnostic.core.DumpProvider;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
+import org.osgi.service.component.annotations.Activate;
 
 /**
  * Dump provider which copies log files from data/log directory to
  * destination.
  */
+@Component(name = "org.apache.karaf.diagnostic.dump.provider.log")
+@Service(DumpProvider.class)
 public class LogDumpProvider implements DumpProvider {
 
     private BundleContext bundleContext;
 
-    public void setBundleContext(BundleContext bundleContext) {
+    @Activate
+    void activate(BundleContext bundleContext) {
         this.bundleContext = bundleContext;
     }
-
     /**
      * Attach log entries from directory.
      */
