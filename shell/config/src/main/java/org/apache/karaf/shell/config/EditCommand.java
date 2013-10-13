@@ -36,7 +36,7 @@ import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 
 @Command(scope = EditCommand.SCOPE_VALUE, name = EditCommand.FUNCTION_VALUE, description = EditCommand.DESCRIPTION, detailedDescription="classpath:edit.txt")
-@Component(name = EditCommand.ID, description = EditCommand.DESCRIPTION)
+@Component(name = EditCommand.ID, description = EditCommand.DESCRIPTION, immediate = true)
 @Service(CompletableFunction.class)
 @org.apache.felix.scr.annotations.Properties({
         @Property(name = ComponentAction.SCOPE, value = EditCommand.SCOPE_VALUE),
@@ -58,7 +58,7 @@ public class EditCommand extends ConfigCommandSupport {
 	@Option(name = "-f", aliases = {"--use-file"}, description = "Configuration lookup using the filename instead of the pid", required = false, multiValued = false)
     boolean useFile;
 
-    @Reference(target = "(completer.type="+ ConfigurationCompleter.COMPLETER_TYPE+")")
+    @Reference(target = "(completer.type="+ ConfigurationCompleter.COMPLETER_TYPE+")", bind = "bindCompleter", unbind = "unbindCompleter")
     Completer pidCompleter;
 
     protected void doExecute(ConfigurationAdmin admin) throws Exception {
@@ -87,10 +87,5 @@ public class EditCommand extends ConfigCommandSupport {
         }
         getSession().put(PROPERTY_CONFIG_PID, pid);
         getSession().put(PROPERTY_CONFIG_PROPS, props);
-    }
-
-    @Override
-    public List<Completer> getCompleters() {
-        return Arrays.asList(pidCompleter);
     }
 }

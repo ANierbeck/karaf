@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Command(scope = PropListCommand.SCOPE_VALUE, name = PropListCommand.FUNCTION_VALUE, description = PropListCommand.DESCRIPTION)
-@Component(name = PropListCommand.ID, description = PropListCommand.DESCRIPTION)
+@Component(name = PropListCommand.ID, description = PropListCommand.DESCRIPTION, immediate = true)
 @Service(CompletableFunction.class)
 @Properties({
         @Property(name = ComponentAction.SCOPE, value = PropListCommand.SCOPE_VALUE),
@@ -46,9 +46,6 @@ public class PropListCommand extends ConfigPropertyCommandSupport {
     public static final String SCOPE_VALUE = "config";
     public static final String FUNCTION_VALUE =  "proplist";
     public static final String DESCRIPTION = "Lists properties from the currently edited configuration.";
-
-    @Reference(target = "(completer.type="+ ConfigurationCompleter.COMPLETER_TYPE+")")
-    Completer pidCompleter;
 
     @Override
     public void propertyAction(Dictionary props) {
@@ -66,12 +63,5 @@ public class PropListCommand extends ConfigPropertyCommandSupport {
     @Override
     protected boolean requiresUpdate(String pid) {
         return false;
-    }
-
-    @Override
-    public Map<String, Completer> getOptionalCompleters() {
-        Map<String, Completer> completers = new HashMap<String, Completer>();
-        completers.put("-p", pidCompleter);
-        return Collections.unmodifiableMap(completers);
     }
 }

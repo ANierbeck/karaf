@@ -18,23 +18,37 @@
  */
 package org.apache.karaf.shell.config;
 
-import java.util.Dictionary;
-
 import org.apache.felix.gogo.commands.Option;
-import java.util.Properties;
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Reference;
+import org.apache.karaf.shell.config.completers.ConfigurationCompleter;
+import org.apache.karaf.shell.config.completers.ConfigurationPropertyCompleter;
+import org.apache.karaf.shell.console.Completer;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
+
+import java.util.Dictionary;
+import java.util.Properties;
 
 /**
  * Abstract class which commands that are related to property processing should extend.
  */
+@Component(name = ConfigPropertyCommandSupport.ID, componentAbstract = true)
 public abstract class ConfigPropertyCommandSupport extends ConfigCommandSupport {
+
+    public static final String ID = "org.apache.karaf.features.command.prpoperty.base";
 
     @Option(name = "-p", aliases = "--pid", description = "The configuration pid", required = false, multiValued = false)
     protected String pid;
 
     @Option(name = "-b", aliases = { "--bypass-storage" }, multiValued = false, required = false, description = "Do not store the configuration in a properties file, but feed it directly to ConfigAdmin")
     protected boolean bypassStorage;
+
+    @Reference(target = "(completer.type="+ ConfigurationCompleter.COMPLETER_TYPE+")")
+    Completer pidCompleter;
+
+    @Reference(target = "(completer.type="+ ConfigurationPropertyCompleter.COMPLETER_TYPE+")")
+    Completer keysCompleters;
 
 
     protected void doExecute(ConfigurationAdmin admin) throws Exception {
@@ -95,4 +109,21 @@ public abstract class ConfigPropertyCommandSupport extends ConfigCommandSupport 
         return super.getEditedProps();
     }
 
+    void bindPidCompleter(Completer pidCompleter) {
+        this.pidCompleter = pidCompleter;
+        getOptionalCompleters().put("-p", pidCompleter);
+    }
+
+    void unbindPidCompleter(Completer pidCompleter) {
+        this.pidCompleter = null;
+        getOptionalCompleters().remove("-p");
+    }
+
+    void bindKeysCompleters(Completer keysCompleters) {
+        this.keysCompleters = keysCompleters;
+    }
+
+    void unbindKeysCompleters(Completer keysCompleters) {
+        this.keysCompleters = null;
+    }
 }

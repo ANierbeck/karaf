@@ -35,7 +35,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Command(scope = DeleteCommand.SCOPE_VALUE, name = DeleteCommand.FUNCTION_VALUE, description = DeleteCommand.DESCRIPTION)
-@Component(name = DeleteCommand.ID, description = DeleteCommand.DESCRIPTION)
+@Component(name = DeleteCommand.ID, description = DeleteCommand.DESCRIPTION, immediate = true)
 @Service(CompletableFunction.class)
 @Properties({
         @Property(name = ComponentAction.SCOPE, value = DeleteCommand.SCOPE_VALUE),
@@ -59,7 +59,8 @@ public class DeleteCommand extends ConfigCommandSupport {
 
     @Option(name = "-f", aliases = {"--use-file"}, description = "Configuration lookup using the filename instead of the pid", required = false, multiValued = false)
     boolean useFile;
-    @Reference(target = "(completer.type="+ ConfigurationCompleter.COMPLETER_TYPE+")")
+
+    @Reference(target = "(completer.type="+ ConfigurationCompleter.COMPLETER_TYPE+")", bind = "bindCompleter", unbind = "unbindCompleter")
     Completer pidCompleter;
 
     protected void doExecute(ConfigurationAdmin admin) throws Exception {
@@ -89,10 +90,4 @@ public class DeleteCommand extends ConfigCommandSupport {
             getSession().put(PROPERTY_CONFIG_PROPS, null);
         }
     }
-
-    @Override
-    public List<Completer> getCompleters() {
-        return Arrays.asList(pidCompleter);
-    }
-
 }

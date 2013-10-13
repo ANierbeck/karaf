@@ -39,7 +39,7 @@ import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.apache.karaf.shell.console.completer.NullCompleter;
 
 @Command(scope = PropSetCommand.SCOPE_VALUE, name = PropSetCommand.FUNCTION_VALUE, description = PropSetCommand.DESCRIPTION)
-@Component(name = PropSetCommand.ID, description = PropSetCommand.DESCRIPTION)
+@Component(name = PropSetCommand.ID, description = PropSetCommand.DESCRIPTION, immediate = true)
 @Service(CompletableFunction.class)
 @Properties({
         @Property(name = ComponentAction.SCOPE, value = PropSetCommand.SCOPE_VALUE),
@@ -51,12 +51,6 @@ public class PropSetCommand extends ConfigPropertyCommandSupport {
     public static final String SCOPE_VALUE = "config";
     public static final String FUNCTION_VALUE =  "propset";
     public static final String DESCRIPTION = "Sets a property in the currently edited configuration.";
-
-    @Reference(target = "(completer.type="+ ConfigurationCompleter.COMPLETER_TYPE+")")
-    Completer pidCompleter;
-
-    @Reference(target = "(completer.type="+ ConfigurationPropertyCompleter.COMPLETER_TYPE+")")
-    Completer keysCompleters;
 
     @Argument(index = 0, name = "property", description = "The name of the property to set", required = true, multiValued = false)
     String prop;
@@ -73,12 +67,5 @@ public class PropSetCommand extends ConfigPropertyCommandSupport {
     @Override
     public List<Completer> getCompleters() {
         return Arrays.asList(keysCompleters, NullCompleter.INSTANCE);
-    }
-
-    @Override
-    public Map<String, Completer> getOptionalCompleters() {
-        Map<String, Completer> completers = new HashMap<String, Completer>();
-        completers.put("-p", pidCompleter);
-        return Collections.unmodifiableMap(completers);
     }
 }

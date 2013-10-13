@@ -39,7 +39,7 @@ import org.apache.karaf.shell.console.commands.ComponentAction;
 import org.apache.karaf.shell.console.completer.NullCompleter;
 
 @Command(scope = PropDelCommand.SCOPE_VALUE, name = PropDelCommand.FUNCTION_VALUE, description = PropDelCommand.DESCRIPTION)
-@Component(name = PropDelCommand.ID, description = PropDelCommand.DESCRIPTION)
+@Component(name = PropDelCommand.ID, description = PropDelCommand.DESCRIPTION, immediate = true)
 @Service(CompletableFunction.class)
 @Properties({
         @Property(name = ComponentAction.SCOPE, value = PropDelCommand.SCOPE_VALUE),
@@ -55,12 +55,6 @@ public class PropDelCommand extends ConfigPropertyCommandSupport {
     @Argument(index = 0, name = "property", description = "The name of the property to delete", required = true, multiValued = false)
     String prop;
 
-    @Reference(target = "(completer.type="+ ConfigurationCompleter.COMPLETER_TYPE+")")
-    Completer pidCompleter;
-
-    @Reference(target = "(completer.type="+ ConfigurationPropertyCompleter.COMPLETER_TYPE+")")
-    Completer keysCompleters;
-
     @Override
     public void propertyAction(Dictionary props) {
         props.remove(prop);
@@ -69,12 +63,5 @@ public class PropDelCommand extends ConfigPropertyCommandSupport {
     @Override
     public List<Completer> getCompleters() {
         return Arrays.asList(keysCompleters, NullCompleter.INSTANCE);
-    }
-
-    @Override
-    public Map<String, Completer> getOptionalCompleters() {
-        Map<String, Completer> completers = new HashMap<String, Completer>();
-        completers.put("-p", pidCompleter);
-        return Collections.unmodifiableMap(completers);
     }
 }

@@ -42,7 +42,7 @@ import org.apache.karaf.shell.console.completer.NullCompleter;
  * Appends a value to the current property value.
  */
 @Command(scope = PropAppendCommand.SCOPE_VALUE, name = PropAppendCommand.FUNCTION_VALUE, description = PropAppendCommand.DESCRIPTION)
-@Component(name = PropAppendCommand.ID, description = PropAppendCommand.DESCRIPTION)
+@Component(name = PropAppendCommand.ID, description = PropAppendCommand.DESCRIPTION, immediate = true)
 @Service(CompletableFunction.class)
 @Properties({
         @Property(name = ComponentAction.SCOPE, value = PropAppendCommand.SCOPE_VALUE),
@@ -61,11 +61,6 @@ public class PropAppendCommand extends ConfigPropertyCommandSupport {
     @Argument(index = 1, name = "value", description = "The value to append to the property", required = true, multiValued = false)
     String value;
 
-    @Reference(target = "(completer.type="+ ConfigurationCompleter.COMPLETER_TYPE+")")
-    Completer pidCompleter;
-
-    @Reference(target = "(completer.type="+ ConfigurationPropertyCompleter.COMPLETER_TYPE+")")
-    Completer keysCompleters;
 
     @Override
     public void propertyAction(Dictionary props) {
@@ -83,12 +78,5 @@ public class PropAppendCommand extends ConfigPropertyCommandSupport {
     @Override
     public List<Completer> getCompleters() {
         return Arrays.asList(keysCompleters, NullCompleter.INSTANCE);
-    }
-
-    @Override
-    public Map<String, Completer> getOptionalCompleters() {
-        Map<String, Completer> completers = new HashMap<String, Completer>();
-        completers.put("-p", pidCompleter);
-        return Collections.unmodifiableMap(completers);
     }
 }
