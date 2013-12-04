@@ -28,16 +28,34 @@
         <bundle start-level="30">mvn:org.apache.karaf.shell/org.apache.karaf.shell.console/${project.version}</bundle>
         <bundle start-level="30">mvn:org.apache.karaf.shell/org.apache.karaf.shell.osgi/${project.version}</bundle>
         <bundle start-level="30">mvn:org.apache.karaf.shell/org.apache.karaf.shell.log/${project.version}</bundle>
-        <bundle start-level="30">mvn:org.apache.karaf.shell/org.apache.karaf.shell.packages/${project.version}</bundle>
-        <bundle start-level="30">mvn:org.apache.karaf.shell/org.apache.karaf.shell.commands/${project.version}</bundle>
-        <bundle start-level="30">mvn:org.apache.karaf.shell/org.apache.karaf.shell.dev/${project.version}</bundle>
-        <bundle start-level="30">mvn:org.apache.karaf.jaas/org.apache.karaf.jaas.config/${project.version}</bundle>
-        <bundle start-level="30">mvn:org.apache.karaf.jaas/org.apache.karaf.jaas.modules/${project.version}</bundle>
-        <bundle start-level="30">mvn:org.apache.karaf.jaas/org.apache.karaf.jaas.command/${project.version}</bundle>
         <bundle start-level="25">mvn:org.apache.karaf.features/org.apache.karaf.features.core/${project.version}</bundle>
         <bundle start-level="30">mvn:org.apache.karaf.features/org.apache.karaf.features.command/${project.version}</bundle>
         <bundle start-level="30">mvn:org.apache.karaf.features/org.apache.karaf.features.management/${project.version}</bundle>
         <bundle start-level="30">mvn:org.apache.karaf.management/org.apache.karaf.management.server/${project.version}</bundle>
+    </feature>
+
+    <feature name="jaas" description="JAAS" version="${project.version}" resolver="(obr)">
+        <bundle start-level="30">mvn:org.apache.karaf.jaas/org.apache.karaf.jaas.config/${project.version}</bundle>
+        <bundle start-level="30">mvn:org.apache.karaf.jaas/org.apache.karaf.jaas.modules/${project.version}</bundle>
+        <bundle start-level="30">mvn:org.apache.karaf.jaas/org.apache.karaf.jaas.command/${project.version}</bundle>
+    </feature>
+
+    <feature name="core-commands" description="Core Commands" version="${project.version}" resolver="(obr)">
+        <feature version="${project.version}">dev-commands</feature>
+        <feature version="${project.version}">pkg-commands</feature>
+        <feature version="${project.version}">shell-commands</feature>
+    </feature>
+
+    <feature name="dev-commands" description="Dev Commands" version="${project.version}" resolver="(obr)">
+        <bundle start-level="30">mvn:org.apache.karaf.shell/org.apache.karaf.shell.dev/${project.version}</bundle>
+    </feature>
+
+    <feature name="pkg-commands" description="Pakage Admin Commands" version="${project.version}" resolver="(obr)">
+        <bundle start-level="30">mvn:org.apache.karaf.shell/org.apache.karaf.shell.packages/${project.version}</bundle>
+    </feature>
+
+    <feature name="shell-commands" description="Various Shell Commands" version="${project.version}" resolver="(obr)">
+        <bundle start-level="30">mvn:org.apache.karaf.shell/org.apache.karaf.shell.commands/${project.version}</bundle>
     </feature>
 
     <feature name="aries-blueprint" description="Aries blueprint feature" version="${project.version}" resolver="(obr)">
@@ -427,12 +445,15 @@
             sshRealm=karaf
             hostKey=${karaf.base}/etc/host.key
         </config>
+        <feature version="${project.version}">jaas</feature>
         <bundle start-level="30" dependency='true'>mvn:org.apache.mina/mina-core/${mina.version}</bundle>
         <bundle start-level="30" dependency='true'>mvn:org.apache.sshd/sshd-core/${sshd.version}</bundle>
         <bundle start-level="30">mvn:org.apache.karaf.shell/org.apache.karaf.shell.ssh/${project.version}</bundle>
     </feature>
 
     <feature name="management" description="Provide a JMX MBeanServer and a set of MBeans in Karaf" version="${project.version}">
+        <feature version="${project.version}">jaas</feature>
+        <bundle start-level="30">mvn:org.apache.karaf.management/org.apache.karaf.management.server/${project.version}</bundle>
         <bundle start-level="30">mvn:org.apache.karaf.management.mbeans/org.apache.karaf.management.mbeans.system/${project.version}</bundle>
         <bundle start-level="30">mvn:org.apache.karaf.management.mbeans/org.apache.karaf.management.mbeans.bundles/${project.version}</bundle>
         <bundle start-level="30">mvn:org.apache.karaf.management.mbeans/org.apache.karaf.management.mbeans.services/${project.version}</bundle>
@@ -454,7 +475,6 @@
     </feature>
 
     <feature name="scr" description="Declarative Service support" version="${project.version}" resolver="(obr)">
-        <bundle dependency="true" start-level="30">mvn:org.apache.felix/org.apache.felix.metatype/${felix.metatype.version}</bundle>
         <bundle dependency="true" start-level="30">mvn:org.apache.felix/org.apache.felix.scr/${felix.scr.version}</bundle>
         <bundle start-level="30">mvn:org.apache.karaf.shell/org.apache.karaf.shell.scr/${project.version}</bundle>
         <bundle start-level="30">mvn:org.apache.karaf.management.mbeans/org.apache.karaf.management.mbeans.scr/${project.version}</bundle>
